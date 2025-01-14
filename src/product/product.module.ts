@@ -4,15 +4,15 @@ import { ProductController } from './product.controller';
 import { Product, ProductSchema } from './product.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { InventoryService } from './inventory.service';
-import { NotificationsService } from 'src/notifications/notifications.service';
+import { NotificationsModule } from 'src/notifications/notifications.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Product.name, schema: ProductSchema }]),
-    NotificationsService
+    NotificationsModule
   ],
   providers: [ProductService, InventoryService],
   controllers: [ProductController],
-  exports : [InventoryService]
+  exports: [ProductService, InventoryService]
 })
 export class ProductModule { }

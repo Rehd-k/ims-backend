@@ -7,8 +7,8 @@ import { Supplier } from './supplier.schema';
 @Injectable()
 export class SupplierService {
     constructor(
-        @InjectModel('Supplier') private readonly supplierModel: Model<Supplier>,
-        @InjectModel('Product') private readonly productModel: Model<Product>,
+        @InjectModel(Supplier.name) private readonly supplierModel: Model<Supplier>,
+        @InjectModel(Product.name) private readonly productModel: Model<Product>,
     ) { }
 
     async createSupplier(data: any): Promise<any> {

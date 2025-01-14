@@ -6,7 +6,10 @@ import { Sale } from './sales.schema';
 
 @Injectable()
 export class SalesService {
-    constructor(private inventoryService: InventoryService, @InjectModel('Product') private readonly saleModel: Model<Sale>,) { }
+    constructor(
+        private inventoryService: InventoryService,
+        @InjectModel(Sale.name) private readonly saleModel: Model<Sale>
+    ) { }
 
     async doSell(sellData: any): Promise<any> {
         try {

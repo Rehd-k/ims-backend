@@ -7,7 +7,7 @@ import { Model } from 'mongoose';
 
 @Injectable()
 export class ActivityService {
-    constructor(@InjectModel('ActivityLog') private readonly activityLogModel: Model<ActivityLog>) { }
+    constructor(@InjectModel(ActivityLog.name) private readonly activityLogModel: Model<ActivityLog>) { }
 
     async logAction(userId: string, username: string, action: string, details?: string) {
         const log = new this.activityLogModel({ userId, username, action, details });
