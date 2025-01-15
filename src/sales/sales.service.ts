@@ -25,7 +25,9 @@ export class SalesService {
     }
     async findAll(): Promise<Sale[]> {
         try {
-            return await this.saleModel.find().exec();
+            return await this.saleModel.find({
+                
+            }).exec();
         } catch (error) {
             throw new InternalServerErrorException(error)
         }

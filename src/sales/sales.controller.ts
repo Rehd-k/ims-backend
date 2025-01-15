@@ -1,18 +1,29 @@
-import { Controller } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 import { Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
 import { SalesService } from './sales.service';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RolesGuard } from 'src/helpers/role/roles.guard';
+import { Role } from 'src/helpers/enums';
+import { Roles } from 'src/helpers/role/roles.decorator';
 
+
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('sales')
 export class SalesController {
     constructor(private readonly salesService: SalesService) { }
 
+
+    @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
     @Post()
     create(@Body() createSaleDto: any) {
         return this.salesService.doSell(createSaleDto);
     }
 
+    @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
     @Get()
-    findAll() {
+    findAll(
+        @Body() filter: any
+    ) {
         return this.salesService.findAll();
     }
 

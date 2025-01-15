@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './user.schema';
 
+
 @Injectable()
 export class UserService {
     constructor(@InjectModel(User.name) private readonly userModel: Model<User>) { }
@@ -22,5 +23,21 @@ export class UserService {
 
     async findOneByUsername(username: string) {
         return this.userModel.findOne({ username });
+    }
+
+    async getAllUsers() {
+        return await this.userModel.find();
+    }
+
+    async getOneById(id: string) {
+        return this.userModel.findById(id);
+    }
+
+    async updateOneById(id: string, user: Partial<User>) {
+        return this.userModel.findByIdAndUpdate(id, user, { new: true });
+    }
+
+    async deleteOneById(id: string) {
+        return this.userModel.findByIdAndDelete(id);
     }
 }

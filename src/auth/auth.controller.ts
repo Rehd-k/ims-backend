@@ -2,6 +2,9 @@ import { Body, Controller, Post, Req, UnauthorizedException, UseGuards } from '@
 import {  } from '@nestjs/platform-express'
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { RolesGuard } from 'src/helpers/role/roles.guard';
+import { Roles } from 'src/helpers/role/roles.decorator';
+import { Role } from 'src/helpers/enums';
 
 
 @Controller('auth')
@@ -17,6 +20,8 @@ export class AuthController {
         return this.authService.login(user);
     }
 
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.God, Role.Admin)
     @Post('register')
     async register(@Body() body: { firstName: string; lastName: string; username: string; password: string; role: string }) {
 
