@@ -1,33 +1,39 @@
-import { Controller, Delete, Put, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Put, Query, UseGuards } from '@nestjs/common';
 import { Get, Post, Body, Param } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/helpers/role/roles.guard';
 import { Role } from 'src/helpers/enums';
 import { Roles } from 'src/helpers/role/roles.decorator';
+import { QueryDto } from './query.dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('product')
+@Controller('products')
 export class ProductController {
     constructor(private readonly productService: ProductService) { }
 
     @Roles(Role.God, Role.Admin, Role.Manager)
-    @Post()
+    @Post(
+
+    )
     async createProduct(@Body() productDto: any) {
         return this.productService.create(productDto);
     }
 
     @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
     @Get()
-    async getAllProducts() {
-        return this.productService.findAll();
+    async getAllProducts(
+        @Query() query: QueryDto
+    ) {
+        console.log('creatzy stuff', query)
+        return this.productService.findAll(query);
     }
 
     @Roles(Role.God, Role.Admin, Role.Manager)
     @Get(':id')
     async getProductById(@Param('id') productId: string) {
         return this.productService.findOne(productId);
-    }
+    } 
 
     @Roles(Role.God, Role.Admin, Role.Manager)
     @Put(':id')

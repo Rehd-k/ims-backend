@@ -42,6 +42,12 @@ export class Purchase {
 
     @Prop()
     notes: string;
+
+    @Prop()
+    supplier: string;
+
+    @Prop()
+    expiryDate : string;
 }
 
 export const PurchaseSchema = SchemaFactory.createForClass(Purchase);

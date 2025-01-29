@@ -11,9 +11,14 @@ export class AuthService {
 
     async validateUser(username: string, password: string): Promise<any> {
         const user = await this.userService.findOneByUsername(username);
+        if (!user) {
+            throw new UnauthorizedException('User not found');
+        }
         if (user && password === user.password) {
             const { password, ...result } = user.toObject();
             return result;
+        } else {
+            throw new UnauthorizedException('Invalid password');
         }
         return null;
     }
@@ -26,9 +31,9 @@ export class AuthService {
     }
 
     async register(firstName: string, lastName: string, username: string, password: string, role: string) {
-  
-            return this.userService.create({ firstName, lastName, username, password, role });
-       
+
+        return this.userService.create({ firstName, lastName, username, password, role });
+
 
     }
 }

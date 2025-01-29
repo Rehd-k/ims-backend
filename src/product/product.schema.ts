@@ -12,7 +12,7 @@ export class Product extends Document {
     @Prop({ required: true, trim: true })
     category: string;
 
-    @Prop({ required: true, min: 0 })
+    @Prop({ min: 0, default: 0 })
     purchasePrice: number;
 
     @Prop({ required: true, min: 0 })
@@ -21,10 +21,10 @@ export class Product extends Document {
     @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId }], ref: 'Purchase' })
     purchases: Purchase[];
 
-    @Prop({ required: true, min: 0 })
+    @Prop({ min: 0, default: 0 })
     roq: number
 
-    @Prop({ required: true, min: 0 })
+    @Prop({ min: 0, default: 0 })
     quantity: number;
 
     @Prop({ trim: true })
@@ -39,23 +39,26 @@ export class Product extends Document {
     @Prop()
     expiryDate: Date;
 
-    @Prop({ min: 0 })
+    @Prop({ min: 0, default: 0 })
     weight: number;
 
     @Prop({ enum: ['kg', 'g', 'lb', 'oz', 'l', 'ml', 'unit'] })
     unit: string;
 
-    @Prop({ unique: true, trim: true })
+    @Prop({})
     barcode: string;
 
     @Prop({ trim: true })
     imageUrl: string;
 
-    @Prop({ default: true })
+    @Prop({ default: false })
     isAvailable: boolean;
 
     @Prop({ default: 0 })
     sold: number;
+
+    @Prop({ required: true, default: 0 })
+    initiator: String
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

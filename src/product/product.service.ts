@@ -2,6 +2,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Product } from './product.schema';
+import { QueryDto } from './query.dto';
 
 @Injectable()
 export class ProductService {
@@ -12,14 +13,32 @@ export class ProductService {
             const createdProduct = new this.productModel(createProductDto);
             return await createdProduct.save();
         } catch (error) {
+            console.log(error)
             throw new InternalServerErrorException(error);
         }
 
     }
 
-    async findAll(): Promise<Product[]> {
+    async findAll(query: QueryDto): Promise<Product[]> {
+        const {
+            filter = '{}',
+            sort = '{}',
+            limit = 10,
+            skip = 0,
+            select = '',
+        } = query;
+        const parsedFilter = JSON.parse(filter);
+        const parsedSort = JSON.parse(sort);
         try {
-            return await this.productModel.find().exec()
+            // const query = {};
+            // Object.assign(query, {}); 
+            return await this.productModel
+                .find(parsedFilter)
+                .sort(parsedSort)
+                .skip(Number(skip))
+                .limit(Number(limit))
+                .select(select)
+                .exec()
         } catch (error) {
             throw new InternalServerErrorException(error);
         }
