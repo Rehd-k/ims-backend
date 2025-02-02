@@ -14,13 +14,19 @@ export class Category extends Document {
         unique: true,
         trim: true,
     })
-    name: String;
+    title: String;
 
     @Prop({
         type: String,
         trim: true
     })
     description: String;
+
+    @Prop({
+        type: String,
+        trim: true
+    })
+    user: String;
 
 };
 

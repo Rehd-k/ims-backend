@@ -20,8 +20,8 @@ export class User {
     @Prop({ required: true, enum: ['admin', 'manager', 'cashier', 'staff', 'god'], default: 'staff' })
     role: string;
 
-    // @Prop({ required: true, default: Date.now() })
-    // createdAt: Date;
+    @Prop({ required: true })
+    initiator: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

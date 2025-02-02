@@ -30,9 +30,9 @@ export class AuthService {
         };
     }
 
-    async register(firstName: string, lastName: string, username: string, password: string, role: string) {
+    async register(firstName: string, lastName: string, username: string, password: string, role: string, initiator: string) {
 
-        return this.userService.create({ firstName, lastName, username, password, role });
+        return await this.userService.create({ firstName, lastName, username, password, role, initiator });
 
 
     }

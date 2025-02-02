@@ -25,7 +25,6 @@ export class ProductController {
     async getAllProducts(
         @Query() query: QueryDto
     ) {
-        console.log('creatzy stuff', query)
         return this.productService.findAll(query);
     }
 

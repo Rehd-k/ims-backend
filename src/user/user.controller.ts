@@ -1,9 +1,10 @@
-import { Controller, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Put, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/helpers/role/roles.guard';
 import { UserService } from './user.service';
 import { Role } from 'src/helpers/enums';
 import { Roles } from 'src/helpers/role/roles.decorator';
+import { QueryDto } from 'src/product/query.dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('user')
@@ -12,28 +13,35 @@ export class UserController {
 
 
     @Roles(Role.God, Role.Admin, Role.Manager)
-    async getAllUsers() {
-        return await this.userService.getAllUsers();
+    @Get()
+    async getAllUsers(
+        @Query() query: QueryDto
+    ) {
+        return await this.userService.getAllUsers(query);
     }
 
     @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
-    async findOneByUsername(username: string) {
+    @Get(':username')
+    async findOneByUsername(@Param('username') username: string) {
         return this.userService.findOneByUsername(username);
     }
 
 
     @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
-    async getOneById(id: string) {
+    @Get(':id')
+    async getOneById(@Param('id') id: string) {
         return this.userService.getOneById(id);
     }
 
     @Roles(Role.God, Role.Admin)
-    async updateOneById(id: string, user: any) {
+    @Put(':id')
+    async updateOneById(@Param('id') id: string, @Body() user: any) {
         return this.userService.updateOneById(id, user);
     }
 
     @Roles(Role.God, Role.Admin)
-    async deleteOneById(id: string) {
+    @Delete(':id')
+    async deleteOneById(@Param('id') id: string) {
         return this.userService.deleteOneById(id);
     }
 }

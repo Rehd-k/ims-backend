@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
-import {  } from '@nestjs/platform-express'
+import { } from '@nestjs/platform-express'
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { RolesGuard } from 'src/helpers/role/roles.guard';
@@ -23,9 +23,9 @@ export class AuthController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(Role.God, Role.Admin)
     @Post('register')
-    async register(@Body() body: { firstName: string; lastName: string; username: string; password: string; role: string }) {
+    async register(@Body() body: { firstName: string; lastName: string; username: string; password: string; role: string; initiator: string }) {
 
-        return this.authService.register(body.firstName, body.lastName, body.username, body.password, body.role);
+        return this.authService.register(body.firstName, body.lastName, body.username, body.password, body.role, body.initiator);
 
     }
 

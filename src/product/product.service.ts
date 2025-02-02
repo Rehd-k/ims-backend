@@ -30,8 +30,7 @@ export class ProductService {
         const parsedFilter = JSON.parse(filter);
         const parsedSort = JSON.parse(sort);
         try {
-            // const query = {};
-            // Object.assign(query, {}); 
+            
             return await this.productModel
                 .find(parsedFilter)
                 .sort(parsedSort)

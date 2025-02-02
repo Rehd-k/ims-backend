@@ -2,6 +2,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './user.schema';
+import { QueryDto } from 'src/product/query.dto';
 
 
 @Injectable()
@@ -25,8 +26,22 @@ export class UserService {
         return this.userModel.findOne({ username });
     }
 
-    async getAllUsers() {
-        return await this.userModel.find();
+    async getAllUsers(query: QueryDto) {
+            const {
+                filter = '{}',
+                sort = '{}',
+                limit = 10,
+                skip = 0,
+                select = '',
+            } = query;
+            const parsedFilter = JSON.parse(filter);
+            const parsedSort = JSON.parse(sort);
+        return await this.userModel.find(parsedFilter)
+        .sort(parsedSort)
+        .skip(Number(skip))
+        .limit(Number(limit))
+        .select(select)
+        .exec()
     }
 
     async getOneById(id: string) {
