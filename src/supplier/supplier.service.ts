@@ -1,14 +1,14 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Product } from 'src/product/product.schema';
+import { Model, Types } from 'mongoose';
 import { Supplier } from './supplier.schema';
+import { QueryDto } from 'src/product/query.dto';
 
 @Injectable()
 export class SupplierService {
     constructor(
         @InjectModel(Supplier.name) private readonly supplierModel: Model<Supplier>,
-        @InjectModel(Product.name) private readonly productModel: Model<Product>,
+
     ) { }
 
     async createSupplier(data: any): Promise<any> {
@@ -16,41 +16,36 @@ export class SupplierService {
         return supplier.save();
     }
 
-    async addOrder(supplierId: string, order: any): Promise<any> {
-        const supplier = await this.supplierModel.findById(supplierId);
-        if (!supplier) {
-            throw new BadRequestException('Supplier not found');
+    async getAllSuppliers(query: QueryDto): Promise<any> {
+        const {
+            filter = '{}',
+            sort = '{}',
+            skip = 0,
+            select = '',
+        } = query;
+        const parsedFilter = JSON.parse(filter);
+        const parsedSort = JSON.parse(sort);
+       
+        try {
+            return await this.supplierModel
+                .find(parsedFilter)
+                .sort(parsedSort)
+                .skip(Number(skip))
+                .select(select)
+                .exec()
+        } catch (error) {
+            throw new InternalServerErrorException(error);
         }
-
-        let totalCost = 0;
-        for (const item of order.items) {
-            const product = await this.productModel.findById(item.productId);
-            if (!product) {
-                throw new BadRequestException(`Product with ID ${item.productId} not found`);
-            }
-            totalCost += product.price * item.quantity;
-        }
-
-        order.totalCost = totalCost;
-        supplier.orders.push(order);
-        supplier.outstandingBalance += totalCost;
-        return supplier.save();
     }
 
-    async recordPayment(supplierId: string, payment: any): Promise<any> {
+    async addOrder(supplierId: Types.ObjectId, orderId: Types.ObjectId): Promise<any> {
         const supplier = await this.supplierModel.findById(supplierId);
         if (!supplier) {
             throw new BadRequestException('Supplier not found');
         }
+        supplier.orders.push(orderId);
 
-        supplier.payments.push(payment);
-        supplier.outstandingBalance -= payment.amount;
-
-        if (supplier.outstandingBalance < 0) {
-            supplier.outstandingBalance = 0; // Avoid negative balances
-        }
-
-        return supplier.save();
+        await supplier.save()
     }
 
     async getSupplierDetails(supplierId: string): Promise<any> {

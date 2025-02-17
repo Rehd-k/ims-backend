@@ -1,12 +1,19 @@
-import { Injectable, BadRequestException  } from '@nestjs/common';
+import { Injectable, BadRequestException, forwardRef, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Product } from './product.schema';
 import { NotificationsService } from 'src/notifications/notifications.service';
+import { PurchasesService } from 'src/purchases/purchases.service';
+import { SalesService } from 'src/sales/sales.service';
 
 @Injectable()
 export class InventoryService {
-    constructor(@InjectModel('Product') private readonly productModel: Model<Product>, private readonly notificationService: NotificationsService) { }
+    constructor(
+        @InjectModel('Product') private readonly productModel: Model<Product>,
+        private readonly notificationService: NotificationsService,
+        @Inject(forwardRef(() => PurchasesService)) private readonly purchasesService: PurchasesService,
+        @Inject(forwardRef(() => SalesService)) private readonly saleService: SalesService
+    ) { }
 
     async restockProduct(productId: string, quantity: number): Promise<any> {
         const product = await this.productModel.findById(productId);
@@ -47,5 +54,35 @@ export class InventoryService {
             `Product ${product.name} is running low on stock.`,
             ['Admin'],
         );
+    }
+
+    async getDashboardData(id: string, startDate: Date, endDate: Date): Promise<any> {
+        const saleInfo = await this.saleService.getDashboardData(id, startDate, endDate);
+        const purchsesinfo = await this.purchasesService.getDashboardData(id);
+        const product = await this.productModel.findById(id);
+
+        return {
+            total_sales: saleInfo.length > 0 ? saleInfo[0].totalAmount : 0,
+            total_purchases: purchsesinfo[0].totalPurchases,
+            total_sales_value: saleInfo.length > 0 ? saleInfo[0].totalPrice : 0,
+            total_cost_purchases: purchsesinfo[0].totalPayableSum,
+            profits: (saleInfo.length > 0 ? saleInfo[0].totalPrice : 0) - purchsesinfo[0].totalPayableSum,
+            damaged_goods: purchsesinfo[0].damagedGoods,
+            debt: purchsesinfo[0].debt,
+            expired_goods: purchsesinfo[0].expiredGoods,
+            quanity: product.quantity,
+
+        }
+    }
+
+    async h(id: string): Promise<any> {
+        // total sales
+        // total purchases
+        // profits 
+        // total sales value
+        // total suppliers
+        // total products in stock
+        // total products out of stock
+
     }
 }

@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Product } from './product.schema';
 import { QueryDto } from './query.dto';
 
@@ -19,6 +19,8 @@ export class ProductService {
 
     }
 
+
+
     async findAll(query: QueryDto): Promise<Product[]> {
         const {
             filter = '{}',
@@ -30,7 +32,7 @@ export class ProductService {
         const parsedFilter = JSON.parse(filter);
         const parsedSort = JSON.parse(sort);
         try {
-            
+            console.log(parsedSort) 
             return await this.productModel
                 .find(parsedFilter)
                 .sort(parsedSort)
@@ -39,6 +41,7 @@ export class ProductService {
                 .select(select)
                 .exec()
         } catch (error) {
+            console.log(error)
             throw new InternalServerErrorException(error);
         }
     }
@@ -51,9 +54,33 @@ export class ProductService {
         }
     }
 
-    async update(id: string, updateProductDto: any): Promise<Product> {
+    async update(id: Types.ObjectId, updateProductDto: any): Promise<Product> {
         try {
             return await this.productModel.findByIdAndUpdate(id, updateProductDto, { new: true }).exec();
+        } catch (error) {
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    async increaseAmount(id: Types.ObjectId, amount: number): Promise<Product> {
+        try {
+            console.log(id, amount)
+            const product = await this.productModel.findById(id).exec();
+            let dbquantity = product.quantity
+            let newquantity = dbquantity + amount
+            product.quantity = newquantity;
+            return await product.save();
+        } catch (error) {
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+
+    async decreaseAmount(id: string, amount: number): Promise<Product> {
+        try {
+            const product = await this.productModel.findById(id).exec();
+            product.quantity -= amount;
+            return await product.save();
         } catch (error) {
             throw new InternalServerErrorException(error);
         }

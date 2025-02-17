@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsInt, Min, IsJSON } from 'class-validator';
+import { IsOptional, IsString, IsInt, Min, IsJSON, IsDate } from 'class-validator';
 
 export class QueryDto {
   @IsOptional()
@@ -22,4 +22,12 @@ export class QueryDto {
   @IsOptional()
   @IsString()
   select?: string; // Comma-separated fields to select
+
+  @IsOptional()
+  @IsDate()
+  startDate?: Date; // Start date for filtering
+
+  @IsOptional()
+  @IsDate()
+  endDate?: Date;
 }

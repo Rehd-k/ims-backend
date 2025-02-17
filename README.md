@@ -97,3 +97,11 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+
+
+## Rules to be done 
+ - if puchases are deleted the quantity would be affected,
+ - if purchases are updated to increase or decrease the diffrernce is added to product quantiy (if + value it increases , if  - value it decreases) 
+ - damages are removed from the over all quanity of the goods
+ - when new outstanding payment is added less from debt

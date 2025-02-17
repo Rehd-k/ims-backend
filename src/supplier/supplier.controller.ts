@@ -1,5 +1,7 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { SupplierService } from './supplier.service';
+import { Types } from 'mongoose';
+import { QueryDto } from 'src/product/query.dto';
 
 @Controller('supplier')
 export class SupplierController {
@@ -11,14 +13,17 @@ export class SupplierController {
     }
 
     @Post(':id/orders')
-    async addOrder(@Param('id') supplierId: string, @Body() order: any) {
+    async addOrder(@Param('id') supplierId: Types.ObjectId, @Body() order: any) {
         return this.supplierService.addOrder(supplierId, order);
     }
 
-    @Post(':id/payments')
-    async recordPayment(@Param('id') supplierId: string, @Body() payment: any) {
-        return this.supplierService.recordPayment(supplierId, payment);
+    @Get()
+    async getSuppliers(
+        @Query() query: QueryDto
+    ) {
+        return this.supplierService.getAllSuppliers(query);
     }
+
 
     @Get(':id')
     async getSupplierDetails(@Param('id') supplierId: string) {

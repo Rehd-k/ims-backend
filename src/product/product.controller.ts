@@ -6,11 +6,13 @@ import { RolesGuard } from 'src/helpers/role/roles.guard';
 import { Role } from 'src/helpers/enums';
 import { Roles } from 'src/helpers/role/roles.decorator';
 import { QueryDto } from './query.dto';
+import { Types } from 'mongoose';
+import { InventoryService } from './inventory.service';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('products')
 export class ProductController {
-    constructor(private readonly productService: ProductService) { }
+    constructor(private readonly productService: ProductService, private readonly inventoryService: InventoryService) { }
 
     @Roles(Role.God, Role.Admin, Role.Manager)
     @Post(
@@ -28,15 +30,28 @@ export class ProductController {
         return this.productService.findAll(query);
     }
 
+    @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
+    @Get('/dashboard/:id')
+    async getDashboardData(
+        @Param('id') id: string,
+        @Query() query: QueryDto,
+    ) {
+        const data = await this.inventoryService.getDashboardData(id, query.startDate, query.endDate);
+        console.log(data);
+        return data;
+    }
+
     @Roles(Role.God, Role.Admin, Role.Manager)
-    @Get(':id')
+    @Get('findone/:id')
     async getProductById(@Param('id') productId: string) {
-        return this.productService.findOne(productId);
-    } 
+        this.productService.findOne(productId);
+
+
+    }
 
     @Roles(Role.God, Role.Admin, Role.Manager)
     @Put(':id')
-    async updateProduct(@Param('id') productId: string, @Body() updateDto: any) {
+    async updateProduct(@Param('id') productId: Types.ObjectId, @Body() updateDto: any) {
         return this.productService.update(productId, updateDto);
     }
 
