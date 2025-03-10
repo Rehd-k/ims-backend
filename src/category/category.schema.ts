@@ -13,12 +13,14 @@ export class Category extends Document {
         required: true,
         unique: true,
         trim: true,
+        set: (title: string) => title.toLowerCase()
     })
     title: String;
 
     @Prop({
         type: String,
-        trim: true
+        trim: true,
+        set: (title: string) => title.toLowerCase()
     })
     description: String;
 

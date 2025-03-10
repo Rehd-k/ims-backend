@@ -11,6 +11,7 @@ export class ProductService {
     async create(createProductDto: any): Promise<Product> {
         try {
             const createdProduct = new this.productModel(createProductDto);
+            createdProduct.title = createdProduct.title.toLowerCase();
             return await createdProduct.save();
         } catch (error) {
             console.log(error)
@@ -18,7 +19,6 @@ export class ProductService {
         }
 
     }
-
 
 
     async findAll(query: QueryDto): Promise<Product[]> {
@@ -32,7 +32,6 @@ export class ProductService {
         const parsedFilter = JSON.parse(filter);
         const parsedSort = JSON.parse(sort);
         try {
-            console.log(parsedSort) 
             return await this.productModel
                 .find(parsedFilter)
                 .sort(parsedSort)

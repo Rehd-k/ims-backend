@@ -6,10 +6,10 @@ export type ExpensesDocument = Expenses & Document;
 
 @Schema()
 export class Expenses extends Document {
-    @Prop({ type: String, required: true })
+    @Prop({ type: String, required: true, set: (title: string) => title.toLowerCase() })
     category: string;
 
-    @Prop({ type: String })
+    @Prop({ type: String, set: (title: string) => title.toLowerCase() })
     description: string;
 
     @Prop({ type: Number, required: true })
@@ -18,7 +18,7 @@ export class Expenses extends Document {
     @Prop({ type: Date, default: Date.now })
     date: Date;
 
-    @Prop({ type: String, required: true })
+    @Prop({ type: String, required: true, set: (title: string) => title.toLowerCase() })
     createdBy: string;
 }
 

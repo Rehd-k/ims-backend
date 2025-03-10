@@ -65,7 +65,6 @@ export class PurchasesService {
 
         const parsedFilter = JSON.parse(filter);
         const parsedSort = JSON.parse(sort);
-        console.log(query)
         let stuff = await this.purchaseModel.aggregate([
             { $match: { ...parsedFilter, createdAt: { $gte: new Date(query.startDate), $lte: new Date(query.endDate) } }, },
 
@@ -90,5 +89,24 @@ export class PurchasesService {
 
     async remove(id: string): Promise<Purchase> {
         return this.purchaseModel.findByIdAndDelete(id).exec();
+    }
+
+
+    async editSoldQuantity(id: string, amount: number) {
+        const purchase = await this.purchaseModel.findById(id)
+        purchase.sold -= amount;
+        await purchase.save();
+        return purchase
+    }
+
+
+
+
+    async findFirstUnsoldPurchase(productId: string) {
+        const purchase = await this.purchaseModel.findOne({
+            productId: productId,
+            $expr: { $lt: ["$sold", "$quantity"] }
+        }).sort({ createdAt: 1 }).exec();
+        return purchase
     }
 }

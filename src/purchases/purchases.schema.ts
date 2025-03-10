@@ -7,7 +7,7 @@ export type PurchaseDocument = Purchase & Document;
 @Schema({ timestamps: true })
 export class Purchase {
 
-    @Prop({ required: true })
+    @Prop({ required: true, set: (title: string) => title.toLowerCase() })
     initiator: string;
 
     @Prop({ type: Types.ObjectId, ref: 'Product', required: true })
@@ -28,16 +28,22 @@ export class Purchase {
     @Prop({ required: true })
     purchaseDate: Date;
 
-    @Prop()
+    @Prop({
+        set: (title: string) => title.toLowerCase()
+    })
     status: string;
 
     @Prop()
     paymentMethod: string;
 
-    @Prop()
+    @Prop({
+        set: (title: string) => title.toLowerCase()
+    })
     shippingAddress: string;
 
-    @Prop()
+    @Prop({
+        set: (title: string) => title.toLowerCase()
+    })
     notes: string;
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Supplier' })
@@ -92,6 +98,9 @@ export class Purchase {
         quantity: number;
         reason: string;
     }[];
+
+    @Prop({ default: 0 })
+    sold: number
 }
 
 export const PurchaseSchema = SchemaFactory.createForClass(Purchase);

@@ -59,8 +59,8 @@ export class AnalyticsService {
     for (const transaction of transactions) {
       totalRevenue += transaction.totalAmount;
       for (const item of transaction.products) {
-        const product = await this.productModel.findById(item.prodId);
-        totalCost += product.purchasePrice * item.amount;
+        const product = await this.productModel.findById(item._id);
+        totalCost += product.purchasePrice * item.quantity;
       }
     }
 

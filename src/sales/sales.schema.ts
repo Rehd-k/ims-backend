@@ -1,29 +1,96 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document, Types } from 'mongoose';
-import { User } from 'src/user/user.schema';
-
+import { Document, Types } from 'mongoose';
 export type SaleDocument = Sale & Document;
 
-class CartProduct {
-    prodId: string;
-    title: string;
-    amount: number;
-    price: number;
-    tootalPrice: number
+function generateTransactionId(): string {
+    return Math.random().toString(36).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
 }
 
+
+
+@Schema()
+class CartProduct {
+    @Prop()
+    _id: string;
+
+    @Prop({
+        set: (title: string) => title.toLowerCase()
+    })
+    title: string;
+
+    @Prop()
+    quantity: number;
+
+    @Prop()
+    price: number;
+
+    @Prop([
+        {
+            quantity: Number,
+            costPrice: Number,
+            profit: Number,
+            total_profit: Number,
+            orderBatch: String
+        },
+    ])
+    breakdown: Array<{ quantity: number; costPrice: number; profit: number, total_profit: number, orderBatch: string }>;
+
+
+    @Prop()
+    total: number;
+}
+const CartProductSchema = SchemaFactory.createForClass(CartProduct);
+
+@Schema()
+class Returns {
+    @Prop()
+    productId: string;
+
+    @Prop({
+        set: (title: string) => title.toLowerCase()
+    })
+    title: string;
+
+    @Prop()
+    quantity: number;
+
+    @Prop()
+    price: number;
+
+    @Prop()
+    total: number;
+
+    @Prop(
+        {
+            set: (title: string) => title.toLowerCase()
+        }
+    )
+    handler: string;
+
+    @Prop({ default: Date.now })
+    returnedAt: Date;
+}
+
+const ReturnsSchema = SchemaFactory.createForClass(Returns);
+
 @Schema({ timestamps: true })
+
 export class Sale {
-    @Prop({ type: [{ type: CartProduct }] })
+    @Prop({ type: [CartProductSchema] })
     products: CartProduct[];
+
+    @Prop({ default: generateTransactionId, index: 'text', set: (transactionId: string) => transactionId.toLowerCase(), })
+    transactionId: string;
 
     @Prop({ required: true })
     totalAmount: number;
 
-    @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
-    handler: mongoose.Schema.Types.ObjectId;
+    @Prop({
+        set: (title: string) => title.toLowerCase(), index: 'text'
+    })
+    handler: string;
 
-    @Prop({ required: true, enum: ['Cash', 'Card', 'Transfer', 'Mixed'] })
+    @Prop({ required: true, enum: ['cash', 'card', 'transfer', 'mixed'] })
     paymentMethod: string;
 
     @Prop()
@@ -36,9 +103,27 @@ export class Sale {
     transfer: number;
 
     @Prop()
-    accountNumber: string
+    discount: number;
+
     @Prop()
+    profit: number;
+
+    @Prop()
+    accountNumber: string
+
+
+    @Prop({
+        set: (title: string) => title.toLowerCase(),
+        index: 'text',
+    })
     accountName: string
+
+
+    @Prop({ type: [ReturnsSchema] })
+    returns: Returns[]
+
+    @Prop({ default: Date.now(), index: 'desc' })
+    transactionDate: Date;
 
 }
 

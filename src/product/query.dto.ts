@@ -30,4 +30,8 @@ export class QueryDto {
   @IsOptional()
   @IsDate()
   endDate?: Date;
+
+  @IsOptional()
+  @IsString()
+  search? : string;
 }

@@ -27,7 +27,8 @@ export class ProductController {
     async getAllProducts(
         @Query() query: QueryDto
     ) {
-        return this.productService.findAll(query);
+        const data = await this.productService.findAll(query);
+        return data;
     }
 
     @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
@@ -37,7 +38,7 @@ export class ProductController {
         @Query() query: QueryDto,
     ) {
         const data = await this.inventoryService.getDashboardData(id, query.startDate, query.endDate);
-        console.log(data);
+      
         return data;
     }
 

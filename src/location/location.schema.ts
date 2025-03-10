@@ -5,19 +5,25 @@ export type LocationDocument = Location & Document;
 
 @Schema({ timestamps: true })
 export class Location extends Document {
-    @Prop({ required: true })
+    @Prop({ required: true, set: (title: string) => title.toLowerCase() })
     name: string;
 
-    @Prop({ required: true })
+    @Prop({ required: true, set: (title: string) => title.toLowerCase() })
     location: string;
 
-    @Prop()
+    @Prop({
+        set: (title: string) => title.toLowerCase()
+    })
     manager: string;
 
-    @Prop()
+    @Prop({
+        set: (title: string) => title.toLowerCase()
+    })
     contact: string;
 
-    @Prop()
+    @Prop({
+        set: (title: string) => title.toLowerCase()
+    })
     email: string;
 
     @Prop()

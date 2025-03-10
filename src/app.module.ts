@@ -16,6 +16,7 @@ import { ExpenseModule } from './expense/expense.module';
 import { LocationModule } from './location/location.module';
 import { PurchasesModule } from './purchases/purchases.module';
 import { CategoryModule } from './category/category.module';
+import { CustomerModule } from './customer/customer.module';
 import 'pino-pretty';
 
 @Module({
@@ -45,7 +46,8 @@ import 'pino-pretty';
         } : undefined, // Pretty logs in development
       },
     }),
-    CategoryModule
+    CategoryModule,
+    CustomerModule
   ],
   controllers: [AppController],
   providers: [AppService],

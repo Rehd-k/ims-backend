@@ -1,33 +1,40 @@
-import { Controller, UseGuards } from '@nestjs/common';
+import { Controller, Query, Req, UseGuards } from '@nestjs/common';
 import { Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
 import { SalesService } from './sales.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/helpers/role/roles.guard';
 import { Role } from 'src/helpers/enums';
 import { Roles } from 'src/helpers/role/roles.decorator';
+import { QueryDto } from 'src/product/query.dto';
 
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+
 @Controller('sales')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class SalesController {
     constructor(private readonly salesService: SalesService) { }
 
 
     @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
     @Post()
-    create(@Body() createSaleDto: any) {
-        return this.salesService.doSell(createSaleDto);
+    create(@Body() createSaleDto: any, @Req() req: any) {
+        return this.salesService.doSell(createSaleDto, req);
     }
 
     @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
     @Get()
     findAll(
-        @Body() filter: any
+        @Query() query: QueryDto, @Req() req: any
     ) {
-        return this.salesService.findAll();
+        return this.salesService.findAll(query, req);
     }
 
-    @Get(':id')
+    @Get('getchart/:id')
+    getLineChart(@Param('id') id: string, @Query() query: QueryDto) {
+        return this.salesService.getSingleProductSaleData(id, query);
+    }
+
+    @Get('findone/:id')
     findOne(@Param('id') id: string) {
         return this.salesService.findOne(id);
     }
@@ -35,6 +42,11 @@ export class SalesController {
     @Put(':id')
     update(@Param('id') id: string, @Body() updateSaleDto: any) {
         return this.salesService.update(id, updateSaleDto);
+    }
+
+    @Put('return/:id')
+    make_returns(@Param('id') id: string, @Body() updateSaleDto: any, @Req() req: any) {
+        return this.salesService.return(id, updateSaleDto, req);
     }
 
     @Delete(':id')
