@@ -61,17 +61,7 @@ export class InventoryService {
         const purchsesinfo = await this.purchasesService.getDashboardData(id);
         const product = await this.productModel.findById(id);
 
-        console.table({
-            total_sales: saleInfo.length > 0 ? saleInfo[0].totalAmount : 0,
-            total_purchases: purchsesinfo.length < 1 ? 0 : purchsesinfo[0].totalPurchases,
-            total_sales_value: saleInfo.length > 0 ? saleInfo[0].totalPrice : 0,
-            total_cost_purchases: purchsesinfo.length < 1 ? 0 : purchsesinfo[0].totalPayableSum,
-            profits: purchsesinfo.length < 1 ? 0 : (saleInfo.length > 0 ? saleInfo[0].totalPrice : 0) - purchsesinfo[0].totalPayableSum,
-            damaged_goods: purchsesinfo.length < 1 ? 0 : purchsesinfo[0].damagedGoods,
-            debt: purchsesinfo.length < 1 ? 0 : purchsesinfo[0].debt,
-            expired_goods: purchsesinfo.length < 1 ? 0 : purchsesinfo[0].expiredGoods,
-            quanity: product.quantity,
-        })
+     
 
         return {
             total_sales: saleInfo.length > 0 ? saleInfo[0].totalAmount : 0,
