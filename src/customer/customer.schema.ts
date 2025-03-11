@@ -6,23 +6,33 @@ export class Customer extends Document {
     @Prop({ required: true })
     name: string;
 
-    @Prop()
+    @Prop({
+        unique: true
+    })
     email: string;
 
-    @Prop()
+    @Prop({
+        unique: true
+    })
     phone_number: string;
 
     @Prop()
     address: string;
 
-    @Prop()
-    total_spent: string;
+    @Prop({
+        default: 0
+    })
+    total_spent: number;
 
-    @Prop()
-    total_returns: string;
+    @Prop({
+        default: 0
+    })
+    total_returns: number;
 
-    @Prop()
-    tootal_refund: string;
+    @Prop({
+        default: 0
+    })
+    tootal_refund: number;
 
     @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId }], ref: 'Sale' })
     orders: Types.ObjectId[];

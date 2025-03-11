@@ -62,21 +62,50 @@ export class PurchasesService {
             select = '',
             limit = 10
         } = query;
+        try {
+            const parsedFilter = JSON.parse(filter);
+            const parsedSort = JSON.parse(sort);
+            const keys = Object.keys(parsedFilter);
 
-        const parsedFilter = JSON.parse(filter);
-        const parsedSort = JSON.parse(sort);
-        let stuff = await this.purchaseModel.aggregate([
-            { $match: { ...parsedFilter, createdAt: { $gte: new Date(query.startDate), $lte: new Date(query.endDate) } }, },
+            const startDate = new Date(query.startDate);
+            startDate.setHours(0, 0, 0, 0); // Start of the startDate
 
-            {
-                $sort: parsedSort
-            },
-            { $limit: Number(limit) },
-            { $skip: Number(skip) },
-            // { $project: { select } },
-            { $lookup: { from: 'suppliers', localField: 'supplier', foreignField: '_id', as: 'supplier' } }
-        ]).exec();
-        return stuff;
+            const endDate = new Date(query.endDate);
+            endDate.setHours(23, 59, 59, 999);
+            keys.forEach(key => {
+                if (key == 'createdAt') {
+                    parsedFilter[key] = { $gte: startDate, $lte: endDate }
+                } else if (key == 'expiryDate') {
+                    parsedFilter[key] = { $gte: startDate, $lte: endDate };
+                } else if (key == 'purchaseDate') {
+                    parsedFilter[key] = { $gte: startDate, $lte: endDate };
+                } else if (key == 'deliveryDate') {
+                    parsedFilter[key] = { $gte: startDate, $lte: endDate };
+                }
+            });
+            console.log(parsedFilter)
+            if (parsedFilter.supplier === '') {
+                delete parsedFilter.supplier
+            }
+
+
+            const purchases = await this.purchaseModel
+                .find(parsedFilter) // Apply filtering
+                .sort(parsedSort)   // Sorting
+                .limit(Number(limit))
+                .skip(Number(skip))
+                .select(select)     // Projection of main document fields
+                .populate({
+                    path: 'supplier',
+                    select: 'name' // Selecting only the 'name' field from the supplier
+                })
+                .exec();
+            console.log(purchases.length)
+            return purchases;
+        } catch (error) {
+            console.error(error);
+            throw new BadRequestException(error);
+        }
     }
 
     async findOne(id: string): Promise<Purchase> {
@@ -92,9 +121,10 @@ export class PurchasesService {
     }
 
 
-    async editSoldQuantity(id: string, amount: number) {
+    async editSoldQuantity(id: string, amount: number, price: number) {
         const purchase = await this.purchaseModel.findById(id)
-        purchase.sold -= amount;
+        const productindex = purchase.sold.findIndex((item) => item.price == price)
+        purchase.sold[productindex].amount -= amount
         await purchase.save();
         return purchase
     }

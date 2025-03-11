@@ -26,24 +26,37 @@ export class CustomerService {
         const parsedFilter = JSON.parse(filter);
         const parsedSort = JSON.parse(sort);
 
+        if (parsedFilter.nameOrPhonenumber) {
+            const nameOrPhonenumber = parsedFilter.nameOrPhonenumber;
+
+            parsedFilter.$or = [
+                { name: { $regex: new RegExp(nameOrPhonenumber, "i") } },
+                { phone_number: { $regex: new RegExp(nameOrPhonenumber, "i") } }
+            ];
+            delete parsedFilter.nameOrPhonenumber;
+        }
+        console.log(parsedFilter);
         try {
             return await this.customerModel
                 .find(parsedFilter)
                 .sort(parsedSort)
+                .limit(10)
                 .skip(Number(skip))
                 .select(select)
                 .exec()
         } catch (error) {
+            console.error(error);
             throw new InternalServerErrorException(error);
         }
     }
 
-    async addOrder(customerId: Types.ObjectId, orderId: Types.ObjectId): Promise<any> {
+    async addOrder(customerId: Types.ObjectId, orderId: Types.ObjectId, total_spent: number): Promise<any> {
         const customer = await this.customerModel.findById(customerId);
         if (!customer) {
             throw new BadRequestException('Customer not found');
         }
         customer.orders.push(orderId);
+        customer.total_spent += 1000;
 
         await customer.save()
     }

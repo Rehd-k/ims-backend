@@ -99,8 +99,17 @@ export class Purchase {
         reason: string;
     }[];
 
-    @Prop({ default: 0 })
-    sold: number
+    @Prop({
+        type: [{
+            amount: Number,
+            price: Number
+        }]
+    })
+    sold: {
+        amount: number;
+        price: number;
+
+    }[]
 }
 
 export const PurchaseSchema = SchemaFactory.createForClass(Purchase);

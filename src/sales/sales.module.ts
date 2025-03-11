@@ -6,10 +6,12 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Product, ProductSchema } from 'src/product/product.schema';
 import { Sale, SaleSchema } from './sales.schema';
 import { PurchasesModule } from 'src/purchases/purchases.module';
+import { CustomerModule } from 'src/customer/customer.module';
 
 @Module({
   imports: [
     forwardRef(() => ProductModule),
+    CustomerModule,
     MongooseModule.forFeature([
       { name: Sale.name, schema: SaleSchema }
     ]),

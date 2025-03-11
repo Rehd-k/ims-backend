@@ -38,7 +38,7 @@ export class ProductController {
         @Query() query: QueryDto,
     ) {
         const data = await this.inventoryService.getDashboardData(id, query.startDate, query.endDate);
-      
+
         return data;
     }
 

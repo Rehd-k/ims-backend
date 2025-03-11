@@ -6,6 +6,7 @@ import { Sale } from './sales.schema';
 import { QueryDto } from 'src/product/query.dto';
 import { PurchasesService } from 'src/purchases/purchases.service';
 import { FilterQuery } from 'mongoose';
+import { CustomerService } from 'src/customer/customer.service';
 
 
 @Injectable()
@@ -14,6 +15,7 @@ export class SalesService {
     constructor(
         @Inject(forwardRef(() => InventoryService)) private inventoryService: InventoryService,
         @InjectModel(Sale.name) private readonly saleModel: Model<Sale>,
+        private customerService: CustomerService,
         private purchaseService: PurchasesService
     ) { }
 
@@ -46,6 +48,10 @@ export class SalesService {
             for (const element of data.products) {
                 await this.inventoryService.deductStock(element._id, element.quantity)
             }
+            if (sellData.customer && sellData.customer !== '') {
+                await this.customerService.addOrder(sellData.customer, data._id, data.totalAmount)
+            }
+            
             return data
         } catch (error) {
             console.log(error)
@@ -58,7 +64,8 @@ export class SalesService {
 
         async function handle_break_down(element: any, purchaseService: PurchasesService) {
             const purchase = await purchaseService.findFirstUnsoldPurchase(element._id);
-            const good_avalable_for_sale = purchase.quantity - purchase.sold;
+            const sold = purchase.sold.reduce((sum, item) => sum + (item.amount || 0), 0);
+            const good_avalable_for_sale = purchase.quantity - sold;
             if (good_avalable_for_sale >= qunt_to_sell) {
                 const breakdown = {
                     orderBatch: purchase._id,
@@ -69,7 +76,7 @@ export class SalesService {
                 };
                 console.log(breakdown);
                 element.breakdown.push(breakdown);
-                purchase.sold += qunt_to_sell;
+                purchase.sold.push({ amount: qunt_to_sell, price: element.price });
                 qunt_to_sell = 0
                 await purchase.save();
             } else {
@@ -82,7 +89,7 @@ export class SalesService {
                 };
 
                 element.breakdown = element.breakdown.push(breakdown);
-                purchase.sold += good_avalable_for_sale;
+                purchase.sold.push({ amount: good_avalable_for_sale, price: element.price });
                 qunt_to_sell = qunt_to_sell - good_avalable_for_sale
                 await purchase.save();
             }
@@ -286,11 +293,11 @@ export class SalesService {
                     while (qunt_to_remove > 0) {
                         let batch = returnItem.batches[0]
                         if (batch.quantity <= qunt_to_remove) {
-                            await this.purchaseService.editSoldQuantity(batch.orderBatch, batch.quantity)
+                            await this.purchaseService.editSoldQuantity(batch.orderBatch, batch.quantity, cart[productIndex].price)
                             returnItem.batches.splice(0, 1)
                             qunt_to_remove -= batch.quantity
                         } else {
-                            await this.purchaseService.editSoldQuantity(batch.orderBatch, qunt_to_remove)
+                            await this.purchaseService.editSoldQuantity(batch.orderBatch, qunt_to_remove, cart[productIndex].price)
                             returnItem.batches[0].quantity -= qunt_to_remove
                             returnItem.batches[0].total_profit = returnItem.batches[0].quantity * returnItem.batches[0].profit
                             qunt_to_remove = 0
