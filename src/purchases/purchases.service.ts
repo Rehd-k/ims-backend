@@ -23,9 +23,11 @@ export class PurchasesService {
     async getDashboardData(id: string): Promise<{ totalPurchases: number; totalPayableSum: number, damagedGoods: number, debt: number, expiredGoods: number }[]> {
         const result = await this.purchaseModel.aggregate([
             { $match: { productId: id } }, // Filter documents containing the productId
+            { $unwind: "$damagedGoods" },
             {
+
                 $group: {
-                    _id: null,
+                    _id: "$damagedGoods",
                     totalPurchases: { $sum: 1 },
                     totalPayableSum: { $sum: "$totalPayable" },
                     damagedGoods: { $sum: "$damagedGoods.quantity" },
@@ -35,6 +37,7 @@ export class PurchasesService {
                 }
             }
         ]);
+        console.log(result[0]._id)
         return result;
     }
 
@@ -112,8 +115,21 @@ export class PurchasesService {
         return this.purchaseModel.findById(id).exec();
     }
 
-    async update(id: string, updatePurchaseDto: any): Promise<Purchase> {
-        return this.purchaseModel.findByIdAndUpdate(id, updatePurchaseDto, { new: true }).exec();
+    async update(id: string, updatePurchaseDto: any) {
+        console.log(updatePurchaseDto)
+        try {
+            const product = await this.productService.findOne(updatePurchaseDto.productId);
+            product.quantity = product.quantity - Number(updatePurchaseDto.damagedGoods.quantity);
+            const purchace = await this.purchaseModel.findById(id);
+            delete updatePurchaseDto.productId;
+            purchace.damagedGoods = updatePurchaseDto.damagedGoods;
+
+            await product.save();
+            await purchace.save();
+        } catch (error) {
+            console.error(error);
+        }
+
     }
 
     async remove(id: string): Promise<Purchase> {

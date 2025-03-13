@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Put } from '@nestjs/common';
 import { Get, Post, Body, Param, Query } from '@nestjs/common';
 import { PurchasesService } from './purchases.service';
 import { Types } from 'mongoose';
@@ -30,6 +30,13 @@ export class PurchasesController {
     @Post(':id/payments')
     async recordPayment(@Param('id') supplierId: Types.ObjectId, @Body() payment: any) {
         return this.purchasesService.recordPayment(supplierId, payment);
+    }
+
+
+    @Put('update/:id')
+    async update(@Param('id') id: string, @Body() updatePurchaseDto: any) {
+        console.log(updatePurchaseDto)
+        return this.purchasesService.update(id, updatePurchaseDto);
     }
 
 
