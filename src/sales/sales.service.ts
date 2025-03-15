@@ -46,12 +46,12 @@ export class SalesService {
             const data = await this.saleModel.create(sellData);
 
             for (const element of data.products) {
-                await this.inventoryService.deductStock(element._id, element.quantity)
+                await this.inventoryService.deductStock(element._id as any, element.quantity)
             }
             if (sellData.customer && sellData.customer !== '') {
                 await this.customerService.addOrder(sellData.customer, data._id, data.totalAmount)
             }
-            
+
             return data
         } catch (error) {
             console.log(error)

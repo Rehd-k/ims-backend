@@ -17,13 +17,14 @@ export class AuthService {
         if (user && password === user.password) {
             const { password, ...result } = user.toObject();
             return result;
-        } else {
-            throw new UnauthorizedException('Invalid password');
-        }
-        return null;
+        } else { throw new UnauthorizedException('Invalid password'); }
+      
     }
 
+
+
     async login(user: any) {
+        console.log('got here for some reasons')
         const payload = { username: user.username, sub: user._id, role: user.role };
         return {
             access_token: this.jwtService.sign(payload),

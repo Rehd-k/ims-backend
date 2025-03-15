@@ -10,8 +10,8 @@ function generateTransactionId(): string {
 
 @Schema()
 class CartProduct {
-    @Prop()
-    _id: string;
+    @Prop({ type: Types.ObjectId, ref: 'Product', required: true })
+    _id: Types.ObjectId;
 
     @Prop({
         set: (title: string) => title.toLowerCase()

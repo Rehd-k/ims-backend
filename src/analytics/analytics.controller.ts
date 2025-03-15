@@ -35,4 +35,25 @@ export class AnalyticsController {
         return this.analyticsService.getProfitAndLoss(new Date(startDate), new Date(endDate));
     }
 
+    @Roles(Role.God, Role.Admin)
+    @Get('/get-best-selling-products')
+    async getBestSellingProducts() {
+        return this.analyticsService.getTopSellingProducts();
+    }
+
+    @Roles(Role.God, Role.Admin)
+    @Get('/inventory-summary')
+    async inventorySummary() {
+        return this.analyticsService.getProductStatistics();
+    }
+
+    @Roles(Role.God, Role.Admin)
+    @Get('/customer-summary')
+    async customerSummary() {
+        return this.analyticsService.getCustomerStatistics();
+    }
+
+
+    
+
 }
