@@ -15,5 +15,3 @@ const uniqueEmails = [...new Set(emails)].filter(Boolean);
 // Write emails to output file
 fs.writeFileSync('extracted_emails.txt', uniqueEmails.join('\n'));
 
-console.log(`Found ${uniqueEmails.length} unique email addresses`);
-console.log('Emails have been saved to extracted_emails.txt');

@@ -4,6 +4,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/helpers/role/roles.guard';
 import { Roles } from 'src/helpers/role/roles.decorator';
 import { Role } from 'src/helpers/enums';
+import { QueryDto } from 'src/product/query.dto';
 
 
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -31,8 +32,8 @@ export class AnalyticsController {
 
     @Roles(Role.God, Role.Admin)
     @Get('/profit-and-loss')
-    async getProfitAndLoss(@Query('startDate') startDate: string, @Query('endDate') endDate: string) {
-        return this.analyticsService.getProfitAndLoss(new Date(startDate), new Date(endDate));
+    async getProfitAndLoss(@Query() query: QueryDto) {
+        return this.analyticsService.getProfitAndLoss(query);
     }
 
     @Roles(Role.God, Role.Admin)
@@ -54,6 +55,6 @@ export class AnalyticsController {
     }
 
 
-    
+
 
 }

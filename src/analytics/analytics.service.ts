@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Customer } from 'src/customer/customer.schema';
 import { Expenses } from 'src/expense/expenses.schema';
 import { Product } from 'src/product/product.schema';
+import { QueryDto } from 'src/product/query.dto';
 import { Sale } from 'src/sales/sales.schema';
 
 @Injectable()
@@ -94,18 +95,19 @@ export class AnalyticsService {
     const topSellingToday = await this.saleModel.aggregate([
       { $match: { createdAt: { $gte: today } } },
       { $unwind: '$products' },
-      { $group: { _id: '$products._id', totalSold: { $sum: '$products.quantity' } } },
+      { $group: { _id: { $toObjectId: '$products._id' }, totalSold: { $sum: '$products.quantity' } } },
       { $sort: { totalSold: -1 } },
       { $limit: 5 },
-      { $lookup: { from: 'products', localField: '_id', foreignField: '_id', as: 'product' } },
-      { $unwind: '$product' },
-      { $project: { _id: 0, title: '$product.title', totalSold: 1 } },
+      { $lookup: { from: 'products', localField: '_id', foreignField: '_id', as: 'productDetails' } },
+      { $unwind: '$productDetails' },
+      { $project: { _id: 0, title: '$productDetails.title', totalSold: 1 } },
     ]);
+
 
     const topSellingWeekly = await this.saleModel.aggregate([
       { $match: { createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - 7)) } } },
       { $unwind: '$products' },
-      { $group: { _id: '$products._id', totalSold: { $sum: '$products.quantity' } } },
+      { $group: { _id: { $toObjectId: '$products._id' }, totalSold: { $sum: '$products.quantity' } } },
       { $sort: { totalSold: -1 } },
       { $limit: 5 },
       { $lookup: { from: 'products', localField: '_id', foreignField: '_id', as: 'product' } },
@@ -116,13 +118,14 @@ export class AnalyticsService {
     const topSellingMonthly = await this.saleModel.aggregate([
       { $match: { createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - 30)) } } },
       { $unwind: '$products' },
-      { $group: { _id: '$products._id', totalSold: { $sum: '$products.quantity' } } },
+      { $group: { _id: { $toObjectId: '$products._id' }, totalSold: { $sum: '$products.quantity' } } },
       { $sort: { totalSold: -1 } },
       { $limit: 5 },
       { $lookup: { from: 'products', localField: '_id', foreignField: '_id', as: 'product' } },
       { $unwind: '$product' },
       { $project: { _id: 0, title: '$product.title', totalSold: 1 } },
     ]);
+
 
     return {
       topSellingToday,
@@ -131,22 +134,23 @@ export class AnalyticsService {
     };
   }
 
-  async getProfitAndLoss(startDate: Date, endDate: Date) {
-    // Set start date to the start of the day
-    startDate.setHours(0, 0, 0, 0);
+  async getProfitAndLoss(query: QueryDto) {
+    const startDate = new Date(query.startDate);
+    startDate.setHours(0, 0, 0, 0); // Start of the startDate
 
-    // Set end date to the end of the day
-    endDate.setHours(23, 59, 59, 999);
+    const endDate = new Date(query.endDate);
+    endDate.setHours(23, 59, 59, 999); // End of the endDate 
+
     // Calculate total revenue
     const revenueResult = await this.saleModel.aggregate([
-      { $match: { date: { $gte: startDate, $lte: endDate } } },
+      { $match: { createdAt: { $gte: startDate, $lte: endDate } } },
       { $group: { _id: null, totalRevenue: { $sum: '$totalAmount' } } },
     ]);
     const totalRevenue = revenueResult[0]?.totalRevenue || 0;
 
     // Calculate total expenses
     const expensesResult = await this.expenseModel.aggregate([
-      { $match: { date: { $gte: startDate, $lte: endDate } } },
+      { $match: { createdAt: { $gte: startDate, $lte: endDate } } },
       { $group: { _id: null, totalExpenses: { $sum: '$amount' } } },
     ]);
     const totalExpenses = expensesResult[0]?.totalExpenses || 0;
@@ -163,33 +167,31 @@ export class AnalyticsService {
 
   async getProductStatistics(): Promise<any> {
     const result = await this.productModel.aggregate([
+      { $match: { isAvailable: true } },
       {
-        $facet: {
-          totalProducts: [{ $count: "count" }],
-          totalQuantity: [{ $group: { _id: null, totalQuantity: { $sum: "$quantity" } } }],
-          totalValue: [{ $group: { _id: null, totalValue: { $sum: { $multiply: ["$quantity", "$price"] } } } }],
-          lowStockCount: [{ $match: { $expr: { $lt: ["$quantity", "$roq"] } } }, { $count: "count" }],
-          fastestMovingProduct: [{ $sort: { sold: -1 } }, { $limit: 1 }, { $project: { _id: 1, title: 1 } }],
-          slowestMovingProduct: [{ $sort: { sold: 1 } }, { $limit: 1 }, { $project: { _id: 1, title: 1 } }],
-          expiredProducts: [{ $match: { expiryDate: { $lt: new Date() } } }, { $count: "count" }]
-        }
+      $facet: {
+        totalProducts: [{ $count: "count" }],
+        totalQuantity: [{ $group: { _id: null, totalQuantity: { $sum: "$quantity" } } }],
+        totalValue: [{ $group: { _id: null, totalValue: { $sum: { $multiply: ["$quantity", "$price"] } } } }],
+        lowStockCount: [{ $match: { $expr: { $lt: ["$quantity", "$roq"] } } }, { $count: "count" }],
+        fastestMovingProduct: [{ $sort: { sold: -1 } }, { $limit: 1 }, { $project: { _id: 1, title: 1 } }],
+        slowestMovingProduct: [{ $sort: { sold: 1 } }, { $limit: 1 }, { $project: { _id: 1, title: 1 } }],
+        expiredProducts: [{ $match: { expiryDate: { $lt: new Date() } } }, { $count: "count" }]
+      }
       },
       {
-        $project: {
-          totalProducts: { $arrayElemAt: ["$totalProducts.count", 0] },
-          totalQuantity: { $arrayElemAt: ["$totalQuantity.totalQuantity", 0] },
-          totalValue: { $arrayElemAt: ["$totalValue.totalValue", 0] },
-          lowStockCount: { $arrayElemAt: ["$lowStockCount.count", 0] },
-          fastestMovingProduct: { $arrayElemAt: ["$fastestMovingProduct", 0] },
-          slowestMovingProduct: { $arrayElemAt: ["$slowestMovingProduct", 0] },
-          expiredProducts: { $arrayElemAt: ["$expiredProducts.count", 0] }
-
-        }
+      $project: {
+        totalProducts: { $arrayElemAt: ["$totalProducts.count", 0] },
+        totalQuantity: { $arrayElemAt: ["$totalQuantity.totalQuantity", 0] },
+        totalValue: { $arrayElemAt: ["$totalValue.totalValue", 0] },
+        lowStockCount: { $arrayElemAt: ["$lowStockCount.count", 0] },
+        fastestMovingProduct: { $arrayElemAt: ["$fastestMovingProduct", 0] },
+        slowestMovingProduct: { $arrayElemAt: ["$slowestMovingProduct", 0] },
+        expiredProducts: { $arrayElemAt: ["$expiredProducts.count", 0] }
+      }
       }
     ]);
-
     return result[0];
-
   }
 
   async getCustomerStatistics(): Promise<any> {

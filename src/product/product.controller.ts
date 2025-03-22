@@ -1,4 +1,4 @@
-import { Controller, Delete, Put, Query, UseGuards } from '@nestjs/common';
+import { Controller, Delete, InternalServerErrorException, Put, Query, UseGuards } from '@nestjs/common';
 import { Get, Post, Body, Param } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -37,27 +37,34 @@ export class ProductController {
         @Param('id') id: string,
         @Query() query: QueryDto,
     ) {
-        const data = await this.inventoryService.getDashboardData(id, query.startDate, query.endDate);
+        try {
+            const data = await this.inventoryService.getDashboardData(id, query.startDate, query.endDate);
 
-        return data;
+            return data;
+        } catch (error) {
+            throw new InternalServerErrorException(error)
+        }
+
+
     }
 
     @Roles(Role.God, Role.Admin, Role.Manager)
-    @Get('findone/:id')
+    @Get('/findone/:id')
     async getProductById(@Param('id') productId: string) {
-        this.productService.findOne(productId);
+
+        return this.productService.findOne(productId);
 
 
     }
 
     @Roles(Role.God, Role.Admin, Role.Manager)
-    @Put(':id')
+    @Put('/update/:id')
     async updateProduct(@Param('id') productId: Types.ObjectId, @Body() updateDto: any) {
         return this.productService.update(productId, updateDto);
     }
 
     @Roles(Role.God, Role.Admin, Role.Manager)
-    @Delete(':id')
+    @Delete('/delete/:id')
     async deleteProduct(@Param('id') productId: string) {
         return this.productService.remove(productId);
     }

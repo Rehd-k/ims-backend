@@ -35,7 +35,7 @@ export class PurchasesController {
 
     @Put('update/:id')
     async update(@Param('id') id: string, @Body() updatePurchaseDto: any) {
-        console.log(updatePurchaseDto)
+
         return this.purchasesService.update(id, updatePurchaseDto);
     }
 

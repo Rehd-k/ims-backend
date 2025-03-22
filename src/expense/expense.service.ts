@@ -16,7 +16,7 @@ export class ExpensesService {
     }
 
     async updateExpense(id: string, updateData: Partial<Expenses>) {
-        console.log(updateData)
+     
         const expense = await this.expenseModel.findById(id);
         for (const key in updateData) {
             if (updateData.hasOwnProperty(key)) {
@@ -27,7 +27,7 @@ export class ExpensesService {
     }
 
     async deleteExpense(id: string) {
-        console.log(id);
+        
         return await this.expenseModel.findByIdAndDelete(id);
     }
 

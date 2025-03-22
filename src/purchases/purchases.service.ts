@@ -11,13 +11,17 @@ export class PurchasesService {
     constructor(@InjectModel(Purchase.name) private purchaseModel: Model<Purchase>, private supplierService: SupplierService, @Inject(forwardRef(() => ProductService)) private productService: ProductService) { }
 
     async create(createPurchaseDto: any): Promise<Purchase> {
-        console.log(createPurchaseDto);
-        const createdPurchase = new this.purchaseModel(createPurchaseDto);
-        const order = await createdPurchase.save();
-
-        await this.productService.increaseAmount(createdPurchase.productId, createdPurchase.quantity);
-        await this.supplierService.addOrder(createdPurchase.supplier, order._id);
-        return order
+        try {
+            const createdPurchase = new this.purchaseModel(createPurchaseDto);
+            const order = await createdPurchase.save();
+            await this.productService.increaseAmount(createdPurchase.productId, createdPurchase.quantity);
+            await this.supplierService.addOrder(createdPurchase.supplier, order._id);
+            return order
+        } catch (error) {
+            console.error(error);
+            throw new BadRequestException('Failed to create purchase');
+        }
+      
     }
 
     async getDashboardData(id: string): Promise<{ totalPurchases: number; totalPayableSum: number, damagedGoods: number, debt: number, expiredGoods: number }[]> {
@@ -37,7 +41,6 @@ export class PurchasesService {
                 }
             }
         ]);
-        console.log(result[0]._id)
         return result;
     }
 
@@ -86,7 +89,6 @@ export class PurchasesService {
                     parsedFilter[key] = { $gte: startDate, $lte: endDate };
                 }
             });
-            console.log(parsedFilter)
             if (parsedFilter.supplier === '') {
                 delete parsedFilter.supplier
             }
@@ -103,7 +105,6 @@ export class PurchasesService {
                     select: 'name' // Selecting only the 'name' field from the supplier
                 })
                 .exec();
-            console.log(purchases.length)
             return purchases;
         } catch (error) {
             console.error(error);
@@ -116,7 +117,6 @@ export class PurchasesService {
     }
 
     async update(id: string, updatePurchaseDto: any) {
-        console.log(updatePurchaseDto)
         try {
             const product = await this.productService.findOne(updatePurchaseDto.productId);
             product.quantity = product.quantity - Number(updatePurchaseDto.damagedGoods.quantity);
@@ -141,6 +141,9 @@ export class PurchasesService {
         const purchase = await this.purchaseModel.findById(id)
         const productindex = purchase.sold.findIndex((item) => item.price == price)
         purchase.sold[productindex].amount -= amount
+        if (purchase.sold[productindex].amount < 1) {
+            purchase.sold.splice(productindex, 1)
+        }
         await purchase.save();
         return purchase
     }
@@ -151,8 +154,9 @@ export class PurchasesService {
     async findFirstUnsoldPurchase(productId: string) {
         const purchase = await this.purchaseModel.findOne({
             productId: productId,
-            $expr: { $lt: ["$sold", "$quantity"] }
+            $expr: { $lt: [{ $sum: "$sold.amount" }, "$quantity"] }
         }).sort({ createdAt: 1 }).exec();
-        return purchase
+        console.log(purchase)
+        return purchase;
     }
 }

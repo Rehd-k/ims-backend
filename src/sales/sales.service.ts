@@ -22,24 +22,24 @@ export class SalesService {
     async doSell(sellData: any, req: any): Promise<any> {
         let qunt_to_sell = 0;
         let profit = 0;
-        for (const element of sellData.products) {
-
-            qunt_to_sell = element.quantity
-            element.breakdown = [];
-            try {
-                while (qunt_to_sell > 0) {
-                    await handle_break_down(element, this.purchaseService);
-                }
-                for (const el of element.breakdown) {
-                    profit = profit + el.total_profit
-                }
-            } catch (error) {
-                console.log(error)
-                throw new InternalServerErrorException(error)
-            }
-        }
-
         try {
+            for (const element of sellData.products) {
+
+                qunt_to_sell = element.quantity
+                element.breakdown = [];
+                try {
+                    while (qunt_to_sell > 0) {
+                        await handle_break_down(element, this.purchaseService);
+                    }
+                    for (const el of element.breakdown) {
+                        profit = profit + el.total_profit
+                    }
+                } catch (error) {
+                    throw new InternalServerErrorException(error)
+                }
+            }
+
+
             sellData.profit = profit;
             sellData.handler = req.user.username;
             sellData.totalAmount = sellData.cash + sellData.card + sellData.transfer
@@ -47,6 +47,7 @@ export class SalesService {
 
             for (const element of data.products) {
                 await this.inventoryService.deductStock(element._id as any, element.quantity)
+                await this.inventoryService.addToSold(element._id as any, element.quantity)
             }
             if (sellData.customer && sellData.customer !== '') {
                 await this.customerService.addOrder(sellData.customer, data._id, data.totalAmount)
@@ -74,7 +75,6 @@ export class SalesService {
                     profit: element.price - purchase.price,
                     total_profit: (element.price - purchase.price) * qunt_to_sell,
                 };
-                console.log(breakdown);
                 element.breakdown.push(breakdown);
                 purchase.sold.push({ amount: qunt_to_sell, price: element.price });
                 qunt_to_sell = 0
@@ -109,7 +109,6 @@ export class SalesService {
         const end = new Date(endDate);
         end.setHours(23, 59, 59, 999);
 
-        console.log(parsedFilter.sorter, prodictId)
         let groupBy;
         switch (parsedFilter.sorter) {
             case 'Today':
@@ -178,7 +177,6 @@ export class SalesService {
                     $sort: { _id: 1 }
                 }
             ]);
-            console.log(sales)
             return sales;
         } catch (error) {
             throw new InternalServerErrorException(error);
@@ -238,7 +236,6 @@ export class SalesService {
 
             return { sales, handlers };
         } catch (error) {
-            console.log(error);
             throw new InternalServerErrorException(error)
         }
     }
@@ -326,10 +323,10 @@ export class SalesService {
             await sale.save();
             for (const element of data.returns) {
                 await this.inventoryService.restockProduct(element.productId, element.quantity)
+                await this.inventoryService.deductFromSold(element._id as any, element.quantity)
             }
             return sale;
         } catch (e) {
-            console.log(e)
         }
     }
 
@@ -373,7 +370,6 @@ export class SalesService {
                 }
             }
         ]);
-        console.log(sales);
         return sales;
     }
 

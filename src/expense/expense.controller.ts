@@ -18,7 +18,6 @@ export class ExpensesController {
         try {
             return this.expensesService.createExpense(body, req);
         } catch (error) {
-            console.log
         }
 
     }

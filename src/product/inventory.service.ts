@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, forwardRef, Inject } from '@nestjs/common';
+import { Injectable, BadRequestException, forwardRef, Inject, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Product } from './product.schema';
@@ -25,6 +25,31 @@ export class InventoryService {
         return await product.save();
     }
 
+    async addToSold(productId: string, quantity: number): Promise<any> {
+        const product = await this.productModel.findById(productId);
+        if (!product) {
+            throw new BadRequestException('Product not found');
+        }
+
+        product.sold += quantity;
+        await product.save();
+    }
+
+    async deductFromSold(productId: string, quantity: number): Promise<any> {
+        const product = await this.productModel.findById(productId);
+        if (!product) {
+            throw new BadRequestException('Product not found');
+        }
+
+        if (product.sold < quantity) {
+            throw new BadRequestException('Somthings Not Right');
+        }
+
+        product.sold -= quantity;
+
+        await product.save();
+    }
+
     async deductStock(productId: string, quantity: number): Promise<any> {
         const product = await this.productModel.findById(productId);
         if (!product) {
@@ -47,7 +72,6 @@ export class InventoryService {
 
     private async notifyAdminLowStock(product: any): Promise<void> {
         // Implement your notification logic here
-        console.log(`Low Stock Alert: Product ${product.name} has only ${product.quantity} items left.`);
         // You can send an email, push notification, or log the alert
         this.notificationService.createNotification(
             'LowStock',
@@ -57,35 +81,29 @@ export class InventoryService {
     }
 
     async getDashboardData(id: string, startDate: Date, endDate: Date): Promise<any> {
-        const saleInfo = await this.saleService.getDashboardData(id, startDate, endDate);
-        const purchsesinfo = await this.purchasesService.getDashboardData(id);
-        const product = await this.productModel.findById(id);
-        console.table({
-            for : id,
-            total_sales: saleInfo.length > 0 ? saleInfo[0].totalAmount : 0,
-            total_purchases: purchsesinfo.length < 1 ? 0 : purchsesinfo[0].totalPurchases,
-            total_sales_value: saleInfo.length > 0 ? saleInfo[0].totalPrice : 0,
-            total_cost_purchases: purchsesinfo.length < 1 ? 0 : purchsesinfo[0].totalPayableSum,
-            profits: purchsesinfo.length < 1 ? 0 : (saleInfo.length > 0 ? saleInfo[0].totalPrice : 0) - purchsesinfo[0].totalPayableSum,
-            damaged_goods: purchsesinfo[0].damagedGoods,
-            debt: purchsesinfo.length < 1 ? 0 : purchsesinfo[0].debt,
-            expired_goods: purchsesinfo.length < 1 ? 0 : purchsesinfo[0].expiredGoods,
-            quanity: product.quantity,
-        })
+
+        try {
+            const saleInfo = await this.saleService.getDashboardData(id, startDate, endDate);
+            const purchsesinfo = await this.purchasesService.getDashboardData(id);
+            const product = await this.productModel.findById(id);
 
 
-        return {
-            total_sales: saleInfo.length > 0 ? saleInfo[0].totalAmount : 0,
-            total_purchases: purchsesinfo.length < 1 ? 0 : purchsesinfo[0].totalPurchases,
-            total_sales_value: saleInfo.length > 0 ? saleInfo[0].totalPrice : 0,
-            total_cost_purchases: purchsesinfo.length < 1 ? 0 : purchsesinfo[0].totalPayableSum,
-            profits: purchsesinfo.length < 1 ? 0 : (saleInfo.length > 0 ? saleInfo[0].totalPrice : 0) - purchsesinfo[0].totalPayableSum,
-            damaged_goods: purchsesinfo.length < 1 ? 0 : purchsesinfo[0].damagedGoods,
-            debt: purchsesinfo.length < 1 ? 0 : purchsesinfo[0].debt,
-            expired_goods: purchsesinfo.length < 1 ? 0 : purchsesinfo[0].expiredGoods,
-            quanity: product.quantity,
+            return {
+                total_sales: saleInfo.length ? saleInfo[0].totalAmount : 0,
+                total_purchases: purchsesinfo.length ? purchsesinfo[0].totalPurchases : 0,
+                total_sales_value: saleInfo.length ? saleInfo[0].totalPrice : 0,
+                total_cost_purchases: purchsesinfo.length ? purchsesinfo[0].totalPayableSum : 0,
+                profits: purchsesinfo.length ? (saleInfo.length > 0 ? saleInfo[0].totalPrice : 0) - purchsesinfo[0].totalPayableSum : 0,
+                damaged_goods: purchsesinfo.length ? purchsesinfo[0].damagedGoods : 0,
+                debt: purchsesinfo.length ? purchsesinfo[0].debt : 0,
+                expired_goods: purchsesinfo.length ? purchsesinfo[0].expiredGoods : 0,
+                quanity: product ? product.quantity : 0,
 
+            }
+        } catch (error) {
+            return new InternalServerErrorException(error)
         }
+
     }
 
     async h(id: string): Promise<any> {

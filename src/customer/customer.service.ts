@@ -35,7 +35,6 @@ export class CustomerService {
             ];
             delete parsedFilter.nameOrPhonenumber;
         }
-        console.log(parsedFilter);
         try {
             return await this.customerModel
                 .find(parsedFilter)
@@ -51,12 +50,13 @@ export class CustomerService {
     }
 
     async addOrder(customerId: Types.ObjectId, orderId: Types.ObjectId, total_spent: number): Promise<any> {
+        console.log(total_spent)
         const customer = await this.customerModel.findById(customerId);
         if (!customer) {
             throw new BadRequestException('Customer not found');
         }
         customer.orders.push(orderId);
-        customer.total_spent += 1000;
+        customer.total_spent += total_spent;
 
         await customer.save()
     }

@@ -14,7 +14,6 @@ export class ProductService {
             createdProduct.title = createdProduct.title.toLowerCase();
             return await createdProduct.save();
         } catch (error) {
-            console.log(error)
             throw new InternalServerErrorException(error);
         }
 
@@ -40,7 +39,6 @@ export class ProductService {
                 .select(select)
                 .exec()
         } catch (error) {
-            console.log(error)
             throw new InternalServerErrorException(error);
         }
     }
@@ -55,7 +53,7 @@ export class ProductService {
 
     async update(id: Types.ObjectId, updateProductDto: any): Promise<Product> {
         try {
-            return await this.productModel.findByIdAndUpdate(id, updateProductDto, { new: true }).exec();
+            return await this.productModel.findByIdAndUpdate(id, updateProductDto).exec();
         } catch (error) {
             throw new InternalServerErrorException(error);
         }
@@ -63,7 +61,6 @@ export class ProductService {
 
     async increaseAmount(id: Types.ObjectId, amount: number): Promise<Product> {
         try {
-            console.log(id, amount)
             const product = await this.productModel.findById(id).exec();
             let dbquantity = product.quantity
             let newquantity = dbquantity + amount
