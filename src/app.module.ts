@@ -17,11 +17,14 @@ import { LocationModule } from './location/location.module';
 import { PurchasesModule } from './purchases/purchases.module';
 import { CategoryModule } from './category/category.module';
 import { CustomerModule } from './customer/customer.module';
+import { BanksModule } from './banks/banks.module';
 import 'pino-pretty';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost/ims'),
+    ConfigModule.forRoot(),
+    MongooseModule.forRoot(process.env.NODE_ENV === 'production' ? process.env.DATABASE_PROD : process.env.DATABASE_DEV),
     UserModule,
     AuthModule,
     ProductModule,
@@ -39,7 +42,6 @@ import 'pino-pretty';
         transport: process.env.NODE_ENV !== 'production' ? {
           target: 'pino-pretty',
           options: {
-            
             colorize: true,
             translateTime: 'HH:MM:ss',
           },
@@ -47,7 +49,8 @@ import 'pino-pretty';
       },
     }),
     CategoryModule,
-    CustomerModule
+    CustomerModule,
+    BanksModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -9,7 +9,7 @@ import { QueryDto } from './query.dto';
 import { Types } from 'mongoose';
 import { InventoryService } from './inventory.service';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard)
 @Controller('products')
 export class ProductController {
     constructor(private readonly productService: ProductService, private readonly inventoryService: InventoryService) { }
@@ -31,7 +31,7 @@ export class ProductController {
         return data;
     }
 
-    @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
+    @Roles(Role.God, Role.Admin, Role.Manager)
     @Get('/dashboard/:id')
     async getDashboardData(
         @Param('id') id: string,
@@ -42,6 +42,7 @@ export class ProductController {
 
             return data;
         } catch (error) {
+            console.log(error)
             throw new InternalServerErrorException(error)
         }
 
