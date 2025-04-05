@@ -31,7 +31,8 @@ export class SalesController {
 
     @Get('getchart/:id')
     getLineChart(@Param('id') id: string, @Query() query: QueryDto) {
-        return this.salesService.getSingleProductSaleData(id, query);
+        const chartData = this.salesService.getSingleProductSaleData(id, query);
+        return chartData
     }
 
     @Get('findone/:id')
@@ -53,4 +54,5 @@ export class SalesController {
     remove(@Param('id') id: string) {
         return this.salesService.delete(id);
     }
+
 }

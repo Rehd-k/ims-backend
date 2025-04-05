@@ -116,4 +116,7 @@ export class InventoryService {
         // total products out of stock
 
     }
+
+
+   
 }

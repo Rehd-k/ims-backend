@@ -54,6 +54,26 @@ export class AnalyticsController {
         return this.analyticsService.getCustomerStatistics();
     }
 
+    @Roles(Role.God, Role.Admin)
+    @Get('/sales-data')
+    async WeeklySalesData() {
+        const data =  await this.analyticsService.getWeeklySalesData();
+        console.log(data);
+        return data;
+    }
+
+    @Roles(Role.God, Role.Admin)
+    @Get('/get-sales-chart')
+    async GetSalesData(
+        @Query() query: QueryDto
+    ) {
+        const data =  await this.analyticsService.getSalesData(query.filter);
+        console.log(data);
+        return data;
+    }
+    
+    
+
 
 
 

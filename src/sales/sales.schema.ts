@@ -122,7 +122,7 @@ export class Sale {
     @Prop({ type: [ReturnsSchema] })
     returns: Returns[]
 
-    @Prop({ default: Date.now(), index: 'desc' })
+    @Prop({ default: Date.now() })
     transactionDate: Date;
 
 }
