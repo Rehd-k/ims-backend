@@ -21,7 +21,7 @@ export class PurchasesService {
             console.error(error);
             throw new BadRequestException('Failed to create purchase');
         }
-      
+
     }
 
     async getDashboardData(id: string): Promise<{ totalPurchases: number; totalPayableSum: number, damagedGoods: number, debt: number, expiredGoods: number }[]> {
@@ -147,8 +147,6 @@ export class PurchasesService {
         await purchase.save();
         return purchase
     }
-
-
 
 
     async findFirstUnsoldPurchase(productId: string) {

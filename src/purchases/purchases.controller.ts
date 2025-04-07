@@ -1,4 +1,4 @@
-import { Controller, Put } from '@nestjs/common';
+import { Controller, Delete, Put } from '@nestjs/common';
 import { Get, Post, Body, Param, Query } from '@nestjs/common';
 import { PurchasesService } from './purchases.service';
 import { Types } from 'mongoose';
@@ -38,7 +38,5 @@ export class PurchasesController {
 
         return this.purchasesService.update(id, updatePurchaseDto);
     }
-
-
 
 }
