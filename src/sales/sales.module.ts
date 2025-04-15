@@ -7,6 +7,7 @@ import { Product, ProductSchema } from 'src/product/product.schema';
 import { Sale, SaleSchema } from './sales.schema';
 import { PurchasesModule } from 'src/purchases/purchases.module';
 import { CustomerModule } from 'src/customer/customer.module';
+import { ActivityModule } from 'src/activity/activity.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { CustomerModule } from 'src/customer/customer.module';
     MongooseModule.forFeature([
       { name: Sale.name, schema: SaleSchema }
     ]),
-    PurchasesModule
+    PurchasesModule,
+    ActivityModule
   ],
   providers: [SalesService],
   controllers: [SalesController],

@@ -9,6 +9,8 @@ import { ActivityLog, ActivityLogSchema } from './activity.schema';
     MongooseModule.forFeature([{ name: ActivityLog.name, schema: ActivityLogSchema }])
   ],
   controllers: [ActivityController],
-  providers: [ActivityService]
+  providers: [ActivityService],
+  exports: [ActivityService],
+
 })
 export class ActivityModule { }

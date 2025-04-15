@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { QueryDto } from 'src/product/query.dto';
 import { Customer } from './customer.schema';
+import { error } from 'console';
 
 @Injectable()
 export class CustomerService {
@@ -12,8 +13,21 @@ export class CustomerService {
     ) { }
 
     async createCustomer(data: any): Promise<any> {
-        const customer = new this.customerModel(data);
-        return customer.save();
+        try {
+            const customer = new this.customerModel(data);
+            
+            if (customer.email) {
+                const existing = await this.customerModel.findOne({ email: customer.email })
+                if (existing) {
+                    throw Error('Email Already Exists')
+                }
+            }
+            return customer.save();
+        } catch (error) {
+            console.error(error);
+            throw new BadRequestException(error);
+        }
+
     }
 
     async getAllCustomers(query: QueryDto): Promise<any> {
@@ -45,7 +59,7 @@ export class CustomerService {
                 .exec()
         } catch (error) {
             console.error(error);
-            throw new InternalServerErrorException(error);
+            throw new BadRequestException(error);
         }
     }
 

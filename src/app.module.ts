@@ -20,6 +20,7 @@ import { CustomerModule } from './customer/customer.module';
 import { BanksModule } from './banks/banks.module';
 import 'pino-pretty';
 import { ConfigModule } from '@nestjs/config';
+import { TodoModule } from './todo/todo.module';
 
 @Module({
   imports: [
@@ -50,7 +51,8 @@ import { ConfigModule } from '@nestjs/config';
     }),
     CategoryModule,
     CustomerModule,
-    BanksModule
+    BanksModule,
+    TodoModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -29,20 +29,23 @@ export class SalesController {
         return this.salesService.findAll(query, req);
     }
 
+    @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
     @Get('getchart/:id')
     getLineChart(@Param('id') id: string, @Query() query: QueryDto) {
         const chartData = this.salesService.getSingleProductSaleData(id, query);
         return chartData
     }
 
+    @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
     @Get('findone/:id')
     findOne(@Param('id') id: string) {
         return this.salesService.findOne(id);
     }
 
+    @Roles(Role.God, Role.Admin, Role.Manager)
     @Put(':id')
-    update(@Param('id') id: string, @Body() updateSaleDto: any) {
-        return this.salesService.update(id, updateSaleDto);
+    update(@Param('id') id: string, @Body() updateSaleDto: any, @Req() req: any) {
+        return this.salesService.update(id, updateSaleDto, req);
     }
 
     @Put('return/:id')
@@ -50,9 +53,10 @@ export class SalesController {
         return this.salesService.return(id, updateSaleDto, req);
     }
 
+    @Roles(Role.God, Role.Admin, Role.Manager)
     @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.salesService.delete(id);
+    remove(@Param('id') id: string, @Req() req: any) {
+        return this.salesService.delete(id, req);
     }
 
 }

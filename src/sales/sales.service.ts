@@ -7,6 +7,7 @@ import { QueryDto } from 'src/product/query.dto';
 import { PurchasesService } from 'src/purchases/purchases.service';
 import { FilterQuery } from 'mongoose';
 import { CustomerService } from 'src/customer/customer.service';
+import { ActivityService } from 'src/activity/activity.service';
 
 
 @Injectable()
@@ -15,6 +16,7 @@ export class SalesService {
     constructor(
         @Inject(forwardRef(() => InventoryService)) private inventoryService: InventoryService,
         @InjectModel(Sale.name) private readonly saleModel: Model<Sale>,
+        private activityService: ActivityService,
         private customerService: CustomerService,
         private purchaseService: PurchasesService
     ) { }
@@ -50,9 +52,10 @@ export class SalesService {
                 await this.inventoryService.addToSold(element._id as any, element.quantity)
             }
             if (sellData.customer && sellData.customer !== '') {
+                console.log(sellData.customer)
                 await this.customerService.addOrder(sellData.customer, data._id, data.totalAmount)
             }
-
+            await this.activityService.logAction(`${req.user.userId}`, req.user.username, 'Made Sales', `Transaction Id ${data.transactionId}`)
             return data
         } catch (error) {
             console.log(error)
@@ -266,7 +269,6 @@ export class SalesService {
                 .limit(Number(limit))
                 .select(select)
                 .exec();
-
             const handlersSet = new Set<string>();
             sales.forEach(sale => handlersSet.add(sale.handler));
             const handlers = Array.from(handlersSet);
@@ -285,7 +287,7 @@ export class SalesService {
         }
     }
 
-    async update(id: string, updateData: any): Promise<Sale> {
+    async update(id: string, updateData: any, req: any): Promise<Sale> {
 
         try {
             const sale = await this.saleModel.findById(id)
@@ -296,7 +298,9 @@ export class SalesService {
                     sale[key] = updateData[key];
                 }
             }
-            return await sale.save()
+            const data = await sale.save()
+            await this.activityService.logAction(`${req.user.sub}`, req.user.username, 'Update Sales', `Updated sale with transaction Id ${data.transactionId} with ${JSON.stringify(updateData)}`)
+            return data
         } catch (error) {
             throw new InternalServerErrorException(error)
         }
@@ -362,14 +366,17 @@ export class SalesService {
                 await this.inventoryService.restockProduct(element.productId, element.quantity)
                 await this.inventoryService.deductFromSold(element._id as any, element.quantity)
             }
+            await this.activityService.logAction(`${req.user.sub}`, req.user.username, 'Made Returns', `Made returns on transaction with Id ${data.transactionId}`)
             return sale;
         } catch (e) {
         }
     }
 
-    async delete(id: string): Promise<any> {
+    async delete(id: string, req: any): Promise<any> {
         try {
-            return await this.saleModel.findByIdAndDelete(id).exec();
+            const deleted = await this.saleModel.findByIdAndDelete(id).exec();
+            await this.activityService.logAction(`${req.user.sub}`, req.user.username, 'Deleted Transaction', `Made returns on transaction with Id ${id}`)
+            return deleted
         } catch (error) {
             throw new InternalServerErrorException(error)
         }

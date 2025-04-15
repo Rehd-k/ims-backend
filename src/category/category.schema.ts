@@ -15,20 +15,20 @@ export class Category extends Document {
         trim: true,
         set: (title: string) => title.toLowerCase()
     })
-    title: String;
+    title: string;
 
     @Prop({
         type: String,
         trim: true,
         set: (title: string) => title.toLowerCase()
     })
-    description: String;
+    description: string;
 
     @Prop({
         type: String,
         trim: true
     })
-    user: String;
+    user: string;
 
 };
 

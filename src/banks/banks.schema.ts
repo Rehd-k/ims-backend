@@ -21,7 +21,7 @@ export class Bank {
         type: String,
         trim: true
     })
-    initiator: String;
+    initiator: string;
 }
 
 export const BankSchema = SchemaFactory.createForClass(Bank);
