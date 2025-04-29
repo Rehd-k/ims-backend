@@ -1,6 +1,6 @@
 
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type ExpensesDocument = Expenses & Document;
 
@@ -20,6 +20,9 @@ export class Expenses extends Document {
 
     @Prop({ type: String, required: true, set: (title: string) => title.toLowerCase() })
     createdBy: string;
+
+    @Prop({ type: Types.ObjectId, ref: 'Location', required: true })
+    location: Types.ObjectId;
 }
 
 export const ExpensesSchema = SchemaFactory.createForClass(Expenses);

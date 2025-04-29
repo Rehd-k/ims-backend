@@ -50,7 +50,7 @@ export class InventoryService {
         await product.save();
     }
 
-    async deductStock(productId: string, quantity: number): Promise<any> {
+    async deductStock(productId: string, quantity: number, req: any): Promise<any> {
         const product = await this.productModel.findById(productId);
         if (!product) {
             throw new BadRequestException('Product not found');
@@ -64,26 +64,27 @@ export class InventoryService {
 
         // Check for low stock
         if (product.quantity <= product.roq) {
-            await this.notifyAdminLowStock(product);
+            await this.notifyAdminLowStock(product, req);
         }
 
         return product.save();
     }
 
-    private async notifyAdminLowStock(product: any): Promise<void> {
+    private async notifyAdminLowStock(product: any, req: any): Promise<void> {
         // Implement your notification logic here
         // You can send an email, push notification, or log the alert
         this.notificationService.createNotification(
             'LowStock',
             `Product ${product.name} is running low on stock.`,
             ['Admin'],
+            req
         );
     }
 
-    async getDashboardData(id: string, startDate: Date, endDate: Date): Promise<any> {
+    async getDashboardData(id: string, startDate: Date, endDate: Date, req:any): Promise<any> {
 
         try {
-            const saleInfo = await this.saleService.getDashboardData(id, startDate, endDate);
+            const saleInfo = await this.saleService.getDashboardData(id, startDate, endDate, req);
             const purchsesinfo = await this.purchasesService.getDashboardData(id);
             const product = await this.productModel.findById(id);
 

@@ -1,4 +1,4 @@
-import { Controller, Delete, InternalServerErrorException, Put, Query, UseGuards } from '@nestjs/common';
+import { Controller, Delete, InternalServerErrorException, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { Get, Post, Body, Param } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -9,7 +9,7 @@ import { QueryDto } from './query.dto';
 import { Types } from 'mongoose';
 import { InventoryService } from './inventory.service';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('products')
 export class ProductController {
     constructor(private readonly productService: ProductService, private readonly inventoryService: InventoryService) { }
@@ -18,16 +18,17 @@ export class ProductController {
     @Post(
 
     )
-    async createProduct(@Body() productDto: any) {
-        return this.productService.create(productDto);
+    async createProduct(@Body() productDto: any, @Req() req: any) {
+        return this.productService.create(productDto, req);
     }
 
     @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
     @Get()
     async getAllProducts(
-        @Query() query: QueryDto
+        @Query() query: QueryDto,
+        @Req() req: any
     ) {
-        const data = await this.productService.findAll(query);
+        const data = await this.productService.findAll(query, req);
         return data;
     }
 
@@ -36,13 +37,14 @@ export class ProductController {
     async getDashboardData(
         @Param('id') id: string,
         @Query() query: QueryDto,
+        @Req() req: any
     ) {
         try {
-            const data = await this.inventoryService.getDashboardData(id, query.startDate, query.endDate);
+            const data = await this.inventoryService.getDashboardData(id, query.startDate, query.endDate, req);
 
             return data;
         } catch (error) {
-            console.log(error)
+            
             throw new InternalServerErrorException(error)
         }
 

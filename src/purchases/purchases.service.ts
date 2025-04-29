@@ -10,8 +10,9 @@ import { QueryDto } from 'src/product/query.dto';
 export class PurchasesService {
     constructor(@InjectModel(Purchase.name) private purchaseModel: Model<Purchase>, private supplierService: SupplierService, @Inject(forwardRef(() => ProductService)) private productService: ProductService) { }
 
-    async create(createPurchaseDto: any): Promise<Purchase> {
+    async create(createPurchaseDto: any, req: any): Promise<Purchase> {
         try {
+            createPurchaseDto.location = req.user.location;
             const createdPurchase = new this.purchaseModel(createPurchaseDto);
             const order = await createdPurchase.save();
             await this.productService.increaseAmount(createdPurchase.productId, createdPurchase.quantity);
@@ -60,7 +61,7 @@ export class PurchasesService {
         return order.save();
     }
 
-    async findAll(query: QueryDto): Promise<Purchase[]> {
+    async findAll(query: QueryDto, req: any): Promise<Purchase[]> {
         const {
             filter = '{}',
             sort = '{}',
@@ -92,10 +93,8 @@ export class PurchasesService {
             if (parsedFilter.supplier === '') {
                 delete parsedFilter.supplier
             }
-
-
             const purchases = await this.purchaseModel
-                .find(parsedFilter) // Apply filtering
+                .find({ ...parsedFilter, location: req.user.location }) // Apply filtering
                 .sort(parsedSort)   // Sorting
                 .limit(Number(limit))
                 .skip(Number(skip))
@@ -149,12 +148,13 @@ export class PurchasesService {
     }
 
 
-    async findFirstUnsoldPurchase(productId: string) {
+    async findFirstUnsoldPurchase(productId: string, req: any) {
         const purchase = await this.purchaseModel.findOne({
             productId: productId,
-            $expr: { $lt: [{ $sum: "$sold.amount" }, "$quantity"] }
+            $expr: { $lt: [{ $sum: "$sold.amount" }, "$quantity"] },
+            location: req.user.location
         }).sort({ createdAt: 1 }).exec();
-        console.log(purchase)
+
         return purchase;
     }
 }

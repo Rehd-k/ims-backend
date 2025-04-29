@@ -10,18 +10,18 @@ import { QueryDto } from 'src/product/query.dto';
 export class TodoService {
   constructor(@InjectModel(Todo.name) private readonly todoModel: Model<Todo>) { }
 
-  async create(createTodoDto: CreateTodoDto, req: any) {
+  async create(createTodoDto: any, req: any) {
     try {
+      createTodoDto.location = req.user.location
       const newTodo = await this.todoModel.create(createTodoDto)
       return newTodo;
     } catch (error) {
-      console.log(error)
       throw new BadRequestException(error)
     }
 
   }
 
-  async findAll(query: QueryDto) {
+  async findAll(query: QueryDto, req: any) {
     const {
       filter = '{}',
       sort = '{}',
@@ -32,14 +32,13 @@ export class TodoService {
     const parsedFilter = JSON.parse(filter);
     const parsedSort = JSON.parse(sort);
     const todo = await this.todoModel
-      .find(parsedFilter)
+      .find({ ...parsedFilter, location: req.user.location })
       .sort(parsedSort)
       .skip(Number(skip))
       .limit(Number(limit))
       .select(select)
       .exec();
-      console.log(todo);
-      return todo;
+    return todo;
 
   }
 
@@ -61,7 +60,7 @@ export class TodoService {
   }
 
 
-  async remove(id: string, req: any) {
+  async remove(id: string) {
     await this.todoModel.findByIdAndDelete(id);
   }
 }

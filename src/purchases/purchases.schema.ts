@@ -110,6 +110,9 @@ export class Purchase {
         price: number;
 
     }[]
+
+    @Prop({ type: Types.ObjectId, ref: 'Location', required: true })
+    location: Types.ObjectId;
 }
 
 export const PurchaseSchema = SchemaFactory.createForClass(Purchase);

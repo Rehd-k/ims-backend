@@ -21,6 +21,8 @@ import { BanksModule } from './banks/banks.module';
 import 'pino-pretty';
 import { ConfigModule } from '@nestjs/config';
 import { TodoModule } from './todo/todo.module';
+import { InvoiceModule } from './invoice/invoice.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -52,7 +54,9 @@ import { TodoModule } from './todo/todo.module';
     CategoryModule,
     CustomerModule,
     BanksModule,
-    TodoModule
+    TodoModule,
+    InvoiceModule,
+    SettingsModule
   ],
   controllers: [AppController],
   providers: [AppService],

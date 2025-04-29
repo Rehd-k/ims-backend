@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type BankDocument = Bank & Document;
 
@@ -22,6 +22,9 @@ export class Bank {
         trim: true
     })
     initiator: string;
+
+    @Prop({ type: Types.ObjectId, ref: 'Location', required: true })
+    location: Types.ObjectId;
 }
 
 export const BankSchema = SchemaFactory.createForClass(Bank);

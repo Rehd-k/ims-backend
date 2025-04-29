@@ -22,8 +22,8 @@ export class UserService {
         }
     }
 
-    async findOneByUsername(username: string) {
-        return this.userModel.findOne({ username });
+    async findOneByUsername(username: string, location?: string) {
+        return this.userModel.findOne({ username, location });
     }
 
     async getAllUsers(query: QueryDto) {
@@ -41,6 +41,7 @@ export class UserService {
         .skip(Number(skip))
         .limit(Number(limit))
         .select(select)
+        .populate('location') 
         .exec()
     }
 

@@ -9,13 +9,13 @@ export class BanksService {
     constructor(@InjectModel(Bank.name) private readonly bankModel: Model<Bank>) { }
 
     async create(createBankDto: CreateBankDto, req: any): Promise<Bank> {
-        console.log(req.user)
+      
         try {
             const createdBank = new this.bankModel(createBankDto);
             createdBank.initiator = req.user.username;
             return await createdBank.save();
         } catch (error) {
-            console.log(error);
+        
             throw new Error(`Error creating bank: ${error.message}`);
         }
     }

@@ -31,8 +31,8 @@ export class SalesController {
 
     @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
     @Get('getchart/:id')
-    getLineChart(@Param('id') id: string, @Query() query: QueryDto) {
-        const chartData = this.salesService.getSingleProductSaleData(id, query);
+    getLineChart(@Param('id') id: string, @Query() query: QueryDto, @Req() req: any) {
+        const chartData = this.salesService.getSingleProductSaleData(id, query, req);
         return chartData
     }
 

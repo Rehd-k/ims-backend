@@ -8,12 +8,13 @@ import { QueryDto } from 'src/product/query.dto';
 export class CategoryService {
     constructor(@InjectModel(Category.name) private readonly categoryModel: Model<Category>) { }
 
-    async createCategory(category) {
+    async createCategory(category: any, req: any) {
+        category.location = req.user.location;
         return await this.categoryModel.create(category);
 
     }
 
-    async getCategorys(query: QueryDto) {
+    async getCategorys(query: QueryDto, req) {
         const {
             filter = '{}',
             sort = '{}',
@@ -23,7 +24,7 @@ export class CategoryService {
         } = query;
         const parsedFilter = JSON.parse(filter);
         const parsedSort = JSON.parse(sort);
-        return await this.categoryModel.find(parsedFilter)
+        return await this.categoryModel.find({...parsedFilter, location: req.user.location})
             .sort(parsedSort)
             .skip(Number(skip))
             .limit(Number(limit))

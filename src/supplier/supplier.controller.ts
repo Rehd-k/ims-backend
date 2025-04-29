@@ -1,15 +1,22 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { SupplierService } from './supplier.service';
 import { Types } from 'mongoose';
 import { QueryDto } from 'src/product/query.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { Role } from 'src/helpers/enums';
+import { Roles } from 'src/helpers/role/roles.decorator';
+import { RolesGuard } from 'src/helpers/role/roles.guard';
 
+
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('supplier')
 export class SupplierController {
     constructor(private readonly supplierService: SupplierService) { }
 
+    @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff)
     @Post()
-    async createSupplier(@Body() data: any) {
-        return this.supplierService.createSupplier(data);
+    async createSupplier(@Body() data: any, @Req() req: any) {
+        return this.supplierService.createSupplier(data, req);
     }
 
     @Post(':id/orders')
@@ -19,9 +26,10 @@ export class SupplierController {
 
     @Get()
     async getSuppliers(
-        @Query() query: QueryDto
+        @Query() query: QueryDto,
+        @Req() req: any
     ) {
-        return this.supplierService.getAllSuppliers(query);
+        return this.supplierService.getAllSuppliers(query, req);
     }
 
 

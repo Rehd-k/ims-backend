@@ -26,15 +26,15 @@ export class BanksController {
 
     @Roles(Role.God, Role.Admin, Role.Manager)
     @Post()
-    create(@Body() createBankDto: CreateBankDto, @Req() req :any) {
+    create(@Body() createBankDto: CreateBankDto, @Req() req: any) {
         return this.banksService.create(createBankDto, req);
     }
-
+    @Roles(Role.God, Role.Admin, Role.Manager)
     @Put(':id')
     update(@Param('id') id: string, @Body() updateBankDto: CreateBankDto) {
         return this.banksService.update(id, updateBankDto);
     }
-
+    @Roles(Role.God, Role.Admin, Role.Manager)
     @Delete(':id')
     remove(@Param('id') id: string) {
         return this.banksService.remove(id);

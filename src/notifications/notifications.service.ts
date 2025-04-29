@@ -9,14 +9,14 @@ export class NotificationsService {
         @InjectModel(Notification.name) private readonly notificationModel: Model<Notification>,
     ) { }
 
-    async createNotification(type: string, message: string, recipients: string[]) {
-        const notification = new this.notificationModel({ type, message, recipients });
+    async createNotification(type: string, message: string, recipients: string[], req: any) {
+        const notification = new this.notificationModel({ type, message, recipients, location: req.user.location });
         return await notification.save();
     }
 
-    // add getting notofications for a particular user
-    async getNotifications(recipient: string) {
-        return await this.notificationModel.find({ recipients: recipient }).sort({ createdAt: -1 });
+    // add getting notofications for a particular user 
+    async getNotifications(recipient: string, location: string) {
+        return await this.notificationModel.find({ recipients: recipient, location }).sort({ createdAt: -1 });
     }
 
     async markAsRead(notificationId: string) {

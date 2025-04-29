@@ -64,7 +64,7 @@ export class CustomerService {
     }
 
     async addOrder(customerId: Types.ObjectId, orderId: Types.ObjectId, total_spent: number): Promise<any> {
-        console.log(total_spent)
+       
         const customer = await this.customerModel.findById(customerId);
         if (!customer) {
             throw new BadRequestException('Customer not found');

@@ -21,6 +21,9 @@ export class Supplier extends Document {
 
     @Prop({ required: true })
     initiator: string;
+
+    @Prop({ type: Types.ObjectId, ref: 'Location', required: true })
+    location: Types.ObjectId;
 }
 
 export const SupplierSchema = SchemaFactory.createForClass(Supplier);

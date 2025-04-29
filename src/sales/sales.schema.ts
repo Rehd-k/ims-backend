@@ -108,15 +108,8 @@ export class Sale {
     @Prop()
     profit: number;
 
-    @Prop()
-    accountNumber: string
-
-
-    @Prop({
-        set: (title: string) => title.toLowerCase(),
-        index: 'text',
-    })
-    accountName: string
+    @Prop({ type: Types.ObjectId, ref: 'Bank', required: true })
+    bank: Types.ObjectId;
 
 
     @Prop({ type: [ReturnsSchema] })
@@ -124,6 +117,9 @@ export class Sale {
 
     @Prop({ default: Date.now() })
     transactionDate: Date;
+
+    @Prop({ required: true })
+    location: string;
 
 }
 

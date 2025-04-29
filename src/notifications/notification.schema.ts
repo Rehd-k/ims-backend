@@ -16,6 +16,9 @@ export class Notification extends Document {
 
     @Prop({ type: [String] })
     isRead: string[];
+
+    @Prop({ required: true })
+    location: string
 }
 
 export const NotificationSchema = SchemaFactory.createForClass(Notification);

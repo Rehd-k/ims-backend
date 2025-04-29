@@ -4,6 +4,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/helpers/role/roles.guard';
 import { Roles } from 'src/helpers/role/roles.decorator';
 import { Role } from 'src/helpers/enums';
+import { QueryDto } from 'src/product/query.dto';
 
 
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -12,7 +13,7 @@ export class ExpensesController {
     constructor(private readonly expensesService: ExpensesService) { }
 
 
-    @Roles(Role.God, Role.Admin, Role.Manager)
+    @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff)
     @Post()
     async createExpense(@Body() body: any, @Req() req: any) {
         try {
@@ -22,23 +23,27 @@ export class ExpensesController {
 
     }
 
+    @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff)
     @Put('/update/:id')
     async updateExpense(@Param('id') id: string, @Body() body: any) {
         return this.expensesService.updateExpense(id, body);
     }
 
+    @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff)
     @Delete('/delete/:id')
     async deleteExpense(@Param('id') id: string) {
         return this.expensesService.deleteExpense(id);
     }
 
+    @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff)
     @Get()
-    async getExpenses(@Query('startDate') startDate: string, @Query('endDate') endDate: string) {
-        return this.expensesService.getExpenses(new Date(startDate), new Date(endDate));
+    async getExpenses(@Query() query: QueryDto, @Req() req: any) {
+        return this.expensesService.getExpenses(query, req);
     }
 
+    @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff)
     @Get('/total')
-    async getTotalExpenses(@Query('startDate') startDate: string, @Query('endDate') endDate: string) {
-        return this.expensesService.getTotalExpenses(new Date(startDate), new Date(endDate));
+    async getTotalExpenses(@Query() query: QueryDto, @Req() req: any) {
+        return this.expensesService.getTotalExpenses(query, req);
     }
 }

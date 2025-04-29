@@ -33,5 +33,10 @@ export class QueryDto {
 
   @IsOptional()
   @IsString()
-  search? : string;
+  search?: string;
+
+
+  @IsOptional()
+  @IsString()
+  selectedDateField?: string; // Field to filter by date
 }

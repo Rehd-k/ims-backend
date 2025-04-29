@@ -45,20 +45,20 @@ export class SalesService {
             sellData.profit = profit;
             sellData.handler = req.user.username;
             sellData.totalAmount = sellData.cash + sellData.card + sellData.transfer
+            sellData.location = req.user.location
             const data = await this.saleModel.create(sellData);
 
             for (const element of data.products) {
-                await this.inventoryService.deductStock(element._id as any, element.quantity)
+                await this.inventoryService.deductStock(element._id as any, element.quantity, req)
                 await this.inventoryService.addToSold(element._id as any, element.quantity)
             }
             if (sellData.customer && sellData.customer !== '') {
-                console.log(sellData.customer)
+              
                 await this.customerService.addOrder(sellData.customer, data._id, data.totalAmount)
             }
             await this.activityService.logAction(`${req.user.userId}`, req.user.username, 'Made Sales', `Transaction Id ${data.transactionId}`)
             return data
         } catch (error) {
-            console.log(error)
             throw new InternalServerErrorException(error)
         }
 
@@ -67,7 +67,7 @@ export class SalesService {
 
 
         async function handle_break_down(element: any, purchaseService: PurchasesService) {
-            const purchase = await purchaseService.findFirstUnsoldPurchase(element._id);
+            const purchase = await purchaseService.findFirstUnsoldPurchase(element._id, req);
             const sold = purchase.sold.reduce((sum, item) => sum + (item.amount || 0), 0);
             const good_avalable_for_sale = purchase.quantity - sold;
             if (good_avalable_for_sale >= qunt_to_sell) {
@@ -99,12 +99,12 @@ export class SalesService {
         }
     }
 
-    async getSingleProductSaleData(prodictId: string, query: QueryDto) {
+    async getSingleProductSaleData(prodictId: string, query: QueryDto, req: any) {
         const {
             filter = '{}',
         } = query;
         const parsedFilter = JSON.parse(filter);
-        console.log(prodictId, parsedFilter)
+     
         const now = new Date();
         let startDate, endDate, groupBy;
         switch (parsedFilter.sorter) {
@@ -205,14 +205,16 @@ export class SalesService {
         try {
 
             const sales = await this.saleModel.aggregate([
-                { $unwind: "$products" },
                 {
                     $match: {
                         "products._id": prodictId,
-                        transactionDate: { $gte: startDate, $lte: endDate }
+                        transactionDate: { $gte: startDate, $lte: endDate },
+                        location: req.user.location
                     },
 
                 },
+                { $unwind: "$products" },
+
                 { $group: { _id: groupBy, totalSales: { $sum: "$products.total" } } },
                 { $sort: { "_id": 1 } },
                 { $project: { _id: 0, for: "$_id.for", totalSales: 1 } }
@@ -223,11 +225,11 @@ export class SalesService {
         }
     }
 
-    async doSearch(query: string): Promise<Sale[]> {
+    async doSearch(query: string, req: any): Promise<Sale[]> {
         const filterQuery: FilterQuery<Sale> = {};
         const searchQuery = { $text: { $search: query } };
         try {
-            return await this.saleModel.find(searchQuery).exec();
+            return await this.saleModel.find({ ...searchQuery, location: req.user.location }).exec();
         } catch (error) {
             throw new InternalServerErrorException(error);
         }
@@ -263,7 +265,7 @@ export class SalesService {
 
 
             const sales = await this.saleModel
-                .find(parsedFilter)
+                .find({ ...parsedFilter, location: req.user.location })
                 .sort(parsedSort)
                 .skip(Number(skip))
                 .limit(Number(limit))
@@ -299,7 +301,7 @@ export class SalesService {
                 }
             }
             const data = await sale.save()
-            await this.activityService.logAction(`${req.user.sub}`, req.user.username, 'Update Sales', `Updated sale with transaction Id ${data.transactionId} with ${JSON.stringify(updateData)}`)
+            await this.activityService.logAction(`${req.user.userId}`, req.user.username, 'Update Sales', `Updated sale with transaction Id ${data.transactionId} with ${JSON.stringify(updateData)}`)
             return data
         } catch (error) {
             throw new InternalServerErrorException(error)
@@ -366,7 +368,7 @@ export class SalesService {
                 await this.inventoryService.restockProduct(element.productId, element.quantity)
                 await this.inventoryService.deductFromSold(element._id as any, element.quantity)
             }
-            await this.activityService.logAction(`${req.user.sub}`, req.user.username, 'Made Returns', `Made returns on transaction with Id ${data.transactionId}`)
+            await this.activityService.logAction(`${req.user.userId}`, req.user.username, 'Made Returns', `Made returns on transaction with Id ${data.transactionId}`)
             return sale;
         } catch (e) {
         }
@@ -375,14 +377,14 @@ export class SalesService {
     async delete(id: string, req: any): Promise<any> {
         try {
             const deleted = await this.saleModel.findByIdAndDelete(id).exec();
-            await this.activityService.logAction(`${req.user.sub}`, req.user.username, 'Deleted Transaction', `Made returns on transaction with Id ${id}`)
+            await this.activityService.logAction(`${req.user.userId}`, req.user.username, 'Deleted Transaction', `Made returns on transaction with Id ${id}`)
             return deleted
         } catch (error) {
             throw new InternalServerErrorException(error)
         }
     }
 
-    async getDashboardData(id: string, startDate: Date, endDate: Date): Promise<{ totalAmount: number, totalPrice: number }[]> {
+    async getDashboardData(id: string, startDate: Date, endDate: Date, req: any): Promise<{ totalAmount: number, totalPrice: number }[]> {
         if (!startDate) {
             startDate = new Date();
             startDate.setHours(0, 0, 0, 0); // Start of today
@@ -396,7 +398,8 @@ export class SalesService {
             {
                 $match: {
                     "products._id": id,
-                    createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) }
+                    createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) },
+                    location: req.user.location
                 }
             },
             {

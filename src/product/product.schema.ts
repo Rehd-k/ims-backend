@@ -49,7 +49,7 @@ export class Product extends Document {
     @Prop({ min: 0, default: 0 })
     weight: number;
 
-    @Prop({ enum: ['kg', 'g', 'lb', 'oz', 'l', 'ml', 'unit'] })
+    @Prop({ enum: ['kg', 'g', 'lb', 'oz', 'l', 'ml', 'unit', ''] })
     unit: string;
 
     @Prop({ default: generateTransactionId() })
@@ -64,8 +64,11 @@ export class Product extends Document {
     @Prop({ default: 0 })
     sold: number;
 
-    @Prop({ required: true, default: 0})
+    @Prop({ required: true, default: 0 })
     initiator: String
+
+    @Prop({ required: true })
+    location: string
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

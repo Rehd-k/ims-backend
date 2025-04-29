@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type TodoDocument = Todo & Document;
 
@@ -17,18 +17,21 @@ export class Todo extends Document {
     @Prop()
     for: string;
 
-    @Prop({ 
-        type: Date, 
+    @Prop({
+        type: Date,
         default: () => {
             const now = new Date();
             now.setHours(23, 59, 59, 999); // Set to the end of the day
             return now;
-        } 
+        }
     })
     maxDate: Date;
 
     @Prop({ default: false })
     isCompleted: boolean;
+
+    @Prop({ type: Types.ObjectId, ref: 'Location', required: true })
+    location: Types.ObjectId;
 }
 
 export const TodoSchema = SchemaFactory.createForClass(Todo);

@@ -16,12 +16,12 @@ export class AnalyticsService {
     @InjectModel(Customer.name) private readonly customerModel: Model<Customer>
   ) { }
 
-  async getSalesDashboard(): Promise<any> {
+  async getSalesDashboard(req: any): Promise<any> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const dailySales = await this.saleModel.aggregate([
-      { $match: { transactionDate: { $gte: today } } },
+      { $match: { transactionDate: { $gte: today }, location: req.user.location } },
       { $group: { _id: null, totalSales: { $sum: '$totalAmount' } } },
     ]);
 
@@ -30,7 +30,8 @@ export class AnalyticsService {
         $match: {
           transactionDate: {
             $gte: new Date(new Date().setDate(new Date().getDate() - 7))
-          }
+          },
+          location: req.user.location
         }
       },
       { $group: { _id: null, totalSales: { $sum: '$totalAmount' } } },
@@ -41,7 +42,8 @@ export class AnalyticsService {
         $match: {
           transactionDate: {
             $gte: new Date(new Date().setDate(new Date().getDate() - 30))
-          }
+          },
+          location: req.user.location
         }
       },
       { $group: { _id: null, totalSales: { $sum: '$totalAmount' } } },
@@ -54,8 +56,8 @@ export class AnalyticsService {
     };
   }
 
-  async getRevenueReports(): Promise<any> {
-    const transactions = await this.saleModel.find();
+  async getRevenueReports(req: any): Promise<any> {
+    const transactions = await this.saleModel.find({ location: req.user.location });
     let totalRevenue = 0;
     let totalCost = 0;
 
@@ -71,8 +73,8 @@ export class AnalyticsService {
     return { totalRevenue, totalCost, profit };
   }
 
-  async getInventoryReports(): Promise<any> {
-    const products = await this.productModel.find();
+  async getInventoryReports(req: any): Promise<any> {
+    const products = await this.productModel.find({ location: req.user.location });
     const lowStock = products.filter((product) => product.quantity < product.roq);
 
     return {
@@ -88,12 +90,12 @@ export class AnalyticsService {
     };
   }
 
-  async getTopSellingProducts(): Promise<any> {
+  async getTopSellingProducts(req: any): Promise<any> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const topSellingToday = await this.saleModel.aggregate([
-      { $match: { transactionDate: { $gte: today } } },
+      { $match: { transactionDate: { $gte: today }, location: req.user.location } },
       { $unwind: '$products' },
       { $group: { _id: { $toObjectId: '$products._id' }, totalSold: { $sum: '$products.quantity' } } },
       { $sort: { totalSold: -1 } },
@@ -105,7 +107,7 @@ export class AnalyticsService {
 
 
     const topSellingWeekly = await this.saleModel.aggregate([
-      { $match: { transactionDate: { $gte: new Date(new Date().setDate(new Date().getDate() - 7)) } } },
+      { $match: { transactionDate: { $gte: new Date(new Date().setDate(new Date().getDate() - 7)) }, location: req.user.location } },
       { $unwind: '$products' },
       { $group: { _id: { $toObjectId: '$products._id' }, totalSold: { $sum: '$products.quantity' } } },
       { $sort: { totalSold: -1 } },
@@ -116,7 +118,7 @@ export class AnalyticsService {
     ]);
 
     const topSellingMonthly = await this.saleModel.aggregate([
-      { $match: { transactionDate: { $gte: new Date(new Date().setDate(new Date().getDate() - 30)) } } },
+      { $match: { transactionDate: { $gte: new Date(new Date().setDate(new Date().getDate() - 30)) }, location: req.user.location } },
       { $unwind: '$products' },
       { $group: { _id: { $toObjectId: '$products._id' }, totalSold: { $sum: '$products.quantity' } } },
       { $sort: { totalSold: -1 } },
@@ -134,7 +136,7 @@ export class AnalyticsService {
     };
   }
 
-  async getProfitAndLoss(query: QueryDto) {
+  async getProfitAndLoss(query: QueryDto, req: any) {
     const startDate = new Date(query.startDate);
     startDate.setHours(0, 0, 0, 0); // Start of the startDate
 
@@ -143,14 +145,14 @@ export class AnalyticsService {
 
     // Calculate total revenue
     const revenueResult = await this.saleModel.aggregate([
-      { $match: { transactionDate: { $gte: startDate, $lte: endDate } } },
+      { $match: { transactionDate: { $gte: startDate, $lte: endDate }, location: req.user.location } },
       { $group: { _id: null, totalRevenue: { $sum: '$totalAmount' } } },
     ]);
     const totalRevenue = revenueResult[0]?.totalRevenue || 0;
 
     // Calculate total expenses
     const expensesResult = await this.expenseModel.aggregate([
-      { $match: { createdAt: { $gte: startDate, $lte: endDate } } },
+      { $match: { createdAt: { $gte: startDate, $lte: endDate }, location: req.user.location } },
       { $group: { _id: null, totalExpenses: { $sum: '$amount' } } },
     ]);
     const totalExpenses = expensesResult[0]?.totalExpenses || 0;
@@ -165,9 +167,9 @@ export class AnalyticsService {
     };
   }
 
-  async getProductStatistics(): Promise<any> {
+  async getProductStatistics(req: any): Promise<any> {
     const result = await this.productModel.aggregate([
-      { $match: { isAvailable: true } },
+      { $match: { isAvailable: true, location: req.user.location } },
       {
         $facet: {
           totalProducts: [{ $count: "count" }],
@@ -194,8 +196,9 @@ export class AnalyticsService {
     return result[0];
   }
 
-  async getCustomerStatistics(): Promise<any> {
+  async getCustomerStatistics(req: any): Promise<any> {
     const result = await this.customerModel.aggregate([
+      { $match: { location: req.user.location } },
       {
         $lookup: {
           from: "sales",
@@ -271,7 +274,7 @@ export class AnalyticsService {
   }
 
 
-  async getWeeklySalesData(): Promise<any> {
+  async getWeeklySalesData(req: any): Promise<any> {
     const startOfWeek = new Date();
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay()); // Set to Sunday
     startOfWeek.setHours(0, 0, 0, 0);
@@ -283,7 +286,8 @@ export class AnalyticsService {
     const weeklySales = await this.saleModel.aggregate([
       {
         $match: {
-          transactionDate: { $gte: startOfWeek, $lte: endOfWeek }
+          transactionDate: { $gte: startOfWeek, $lte: endOfWeek },
+          location: req.user.location,
         }
       },
       {
@@ -300,7 +304,8 @@ export class AnalyticsService {
     const weeklyExpenses = await this.expenseModel.aggregate([
       {
         $match: {
-          createdAt: { $gte: startOfWeek, $lte: endOfWeek }
+          createdAt: { $gte: startOfWeek, $lte: endOfWeek },
+          location: req.user.location,
         }
       },
       {
@@ -340,7 +345,7 @@ export class AnalyticsService {
   }
 
 
-  async getSalesData(option: string): Promise<any> {
+  async getSalesData(option: string, req: any): Promise<any> {
     const now = new Date();
     let startDate, endDate, groupBy;
 
@@ -442,7 +447,7 @@ export class AnalyticsService {
     }
 
     const sales = await this.saleModel.aggregate([
-      { $match: { transactionDate: { $gte: startDate, $lte: endDate } } },
+      { $match: { transactionDate: { $gte: startDate, $lte: endDate }, location: req.user.location } },
       { $group: { _id: groupBy, totalSales: { $sum: "$totalAmount" } } },
       { $sort: { "_id": 1 } },
       { $project: { _id: 0, for: "$_id.for", totalSales: 1 } }

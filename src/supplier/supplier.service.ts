@@ -11,12 +11,13 @@ export class SupplierService {
 
     ) { }
 
-    async createSupplier(data: any): Promise<any> {
+    async createSupplier(data: any, req): Promise<any> {
+        data.location = req.user.location
         const supplier = new this.supplierModel(data);
         return supplier.save();
     }
 
-    async getAllSuppliers(query: QueryDto): Promise<any> {
+    async getAllSuppliers(query: QueryDto, req: any): Promise<any> {
         const {
             filter = '{}',
             sort = '{}',
@@ -25,10 +26,10 @@ export class SupplierService {
         } = query;
         const parsedFilter = JSON.parse(filter);
         const parsedSort = JSON.parse(sort);
-       
+
         try {
             return await this.supplierModel
-                .find(parsedFilter)
+                .find({ ...parsedFilter, location: req.user.location })
                 .sort(parsedSort)
                 .skip(Number(skip))
                 .select(select)

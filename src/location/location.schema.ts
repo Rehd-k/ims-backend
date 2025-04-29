@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type LocationDocument = Location & Document;
 
@@ -11,29 +11,17 @@ export class Location extends Document {
     @Prop({ required: true, set: (title: string) => title.toLowerCase() })
     location: string;
 
-    @Prop({
-        set: (title: string) => title.toLowerCase()
-    })
+    @Prop({ type: String, required: true })
     manager: string;
-
-    @Prop({
-        set: (title: string) => title.toLowerCase()
-    })
-    contact: string;
-
-    @Prop({
-        set: (title: string) => title.toLowerCase()
-    })
-    email: string;
-
-    @Prop()
-    phoneNumber: string;
 
     @Prop()
     openingHours: string;
 
     @Prop()
     closingHours: string;
+
+    @Prop()
+    initiator: string;
 }
 
 export const LocationSchema = SchemaFactory.createForClass(Location);

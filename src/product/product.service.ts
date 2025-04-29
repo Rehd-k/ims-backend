@@ -8,19 +8,21 @@ import { QueryDto } from './query.dto';
 export class ProductService {
     constructor(@InjectModel(Product.name) private productModel: Model<Product>) { }
 
-    async create(createProductDto: any): Promise<Product> {
+    async create(createProductDto: any, req: any): Promise<Product> {
         try {
+            createProductDto.location = req.user.location;
+            createProductDto.title = createProductDto.title.toLowerCase();
             const createdProduct = new this.productModel(createProductDto);
-            createdProduct.title = createdProduct.title.toLowerCase();
             return await createdProduct.save();
         } catch (error) {
+          
             throw new InternalServerErrorException(error);
         }
 
     }
 
 
-    async findAll(query: QueryDto): Promise<Product[]> {
+    async findAll(query: QueryDto, req: any): Promise<Product[]> {
         const {
             filter = '{}',
             sort = '{}',
@@ -32,7 +34,7 @@ export class ProductService {
         const parsedSort = JSON.parse(sort);
         try {
             return await this.productModel
-                .find(parsedFilter)
+                .find({ ...parsedFilter, location: req.user.location })
                 .sort(parsedSort)
                 .skip(Number(skip))
                 .limit(Number(limit))
