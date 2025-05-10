@@ -17,8 +17,8 @@ import * as fs from 'fs';
 
 @Injectable()
 export class InvoiceService {
-
-  constructor(@InjectModel(Invoice.name) private readonly invoiceModel: Model<Invoice>, private logService: ActivityService, private pdfGeneratorService: PdfGeneratorService, private whatsappService: WhatsappService) { }
+// , private whatsappService: WhatsappService
+  constructor(@InjectModel(Invoice.name) private readonly invoiceModel: Model<Invoice>, private logService: ActivityService, private pdfGeneratorService: PdfGeneratorService) { }
   async create(createInvoiceDto: CreateInvoiceDto, req: any) {
 
     createInvoiceDto['initiator'] = req.user.username
@@ -86,7 +86,7 @@ export class InvoiceService {
 
     const invoice = await this.invoiceModel.findOne(JSON.parse(filter))
 
-    console.log(invoice)
+
     if (!invoice) {
       throw new Error(`Invoice not found`);
     }
@@ -112,7 +112,7 @@ export class InvoiceService {
       `invoice_for_${invoice.customer.name}.pdf`,
     );
 
-    const messade = await this.whatsappService.sendMessage(invoice.customer.phone_number, media);
+    // const messade = await this.whatsappService.sendMessage(invoice.customer.phone_number, media);
 
   }
 

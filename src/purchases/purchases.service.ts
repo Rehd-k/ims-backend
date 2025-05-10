@@ -61,7 +61,7 @@ export class PurchasesService {
         return order.save();
     }
 
-    async findAll(query: QueryDto, req: any): Promise<Purchase[]> {
+    async findAll(query: QueryDto, req: any): Promise<{ purchases: Purchase[], totalDocuments: number }> {
         const {
             filter = '{}',
             sort = '{}',
@@ -98,13 +98,18 @@ export class PurchasesService {
                 .sort(parsedSort)   // Sorting
                 .limit(Number(limit))
                 .skip(Number(skip))
-                .select(select)     // Projection of main document fields
+                .select(`${select}`)     // Projection of main document fields
                 .populate({
                     path: 'supplier',
                     select: 'name' // Selecting only the 'name' field from the supplier
                 })
                 .exec();
-            return purchases;
+
+                console.log(purchases);
+            const totalDocuments = await this.purchaseModel
+                .countDocuments({ ...parsedFilter, location: req.user.location }); // Count total documents matching the filter
+      
+            return { purchases, totalDocuments };
         } catch (error) {
             console.error(error);
             throw new BadRequestException(error);

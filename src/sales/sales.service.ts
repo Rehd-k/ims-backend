@@ -53,7 +53,7 @@ export class SalesService {
                 await this.inventoryService.addToSold(element._id as any, element.quantity)
             }
             if (sellData.customer && sellData.customer !== '') {
-              
+
                 await this.customerService.addOrder(sellData.customer, data._id, data.totalAmount)
             }
             await this.activityService.logAction(`${req.user.userId}`, req.user.username, 'Made Sales', `Transaction Id ${data.transactionId}`)
@@ -104,7 +104,7 @@ export class SalesService {
             filter = '{}',
         } = query;
         const parsedFilter = JSON.parse(filter);
-     
+
         const now = new Date();
         let startDate, endDate, groupBy;
         switch (parsedFilter.sorter) {
@@ -262,6 +262,34 @@ export class SalesService {
             if (req.user.role === 'staff') {
                 parsedFilter.handler = req.user.username
             }
+            const totals = await this.saleModel.aggregate([
+                {
+                    $match: { ...parsedFilter, location: req.user.location }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalAmount: { $sum: "$totalAmount" },
+                        totalDiscount: { $sum: "$discount" },
+                        totalTransfer: { $sum: "$transfer" },
+                        totalCard: { $sum: "$card" },
+                        totalCash: { $sum: "$cash" },
+                        totalProfit: { $sum: "$profit" }
+                    }
+                }
+            ]);
+
+            const summary = totals.length > 0 ? totals[0] : {
+                totalAmount: 0,
+                totalDiscount: 0,
+                totalTransfer: 0,
+                totalCard: 0,
+                totalCash: 0,
+                totalProfit: 0
+            };
+
+
+
 
 
             const sales = await this.saleModel
@@ -275,7 +303,11 @@ export class SalesService {
             sales.forEach(sale => handlersSet.add(sale.handler));
             const handlers = Array.from(handlersSet);
 
-            return { sales, handlers };
+            const totalDocuments = await this.saleModel
+                .countDocuments({ ...parsedFilter, location: req.user.location }); // Count total documents matching the filter
+
+            console.log({ summary, totalDocuments, handlers })
+            return { sales, handlers, totalDocuments, summary };
         } catch (error) {
             throw new InternalServerErrorException(error)
         }

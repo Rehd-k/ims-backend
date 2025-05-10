@@ -15,14 +15,14 @@ export class ProductService {
             const createdProduct = new this.productModel(createProductDto);
             return await createdProduct.save();
         } catch (error) {
-          
+
             throw new InternalServerErrorException(error);
         }
 
     }
 
 
-    async findAll(query: QueryDto, req: any): Promise<Product[]> {
+    async findAll(query: QueryDto, req: any): Promise<{ products: Product[], totalDocuments: number }> {
         const {
             filter = '{}',
             sort = '{}',
@@ -33,13 +33,22 @@ export class ProductService {
         const parsedFilter = JSON.parse(filter);
         const parsedSort = JSON.parse(sort);
         try {
-            return await this.productModel
+         
+
+            const products = await this.productModel
                 .find({ ...parsedFilter, location: req.user.location })
                 .sort(parsedSort)
                 .skip(Number(skip))
                 .limit(Number(limit))
                 .select(select)
-                .exec()
+                .exec();
+
+           
+            const totalDocuments = await this.productModel
+                .countDocuments({ ...parsedFilter, location: req.user.location })
+                .exec();
+
+            return { products, totalDocuments };
         } catch (error) {
             throw new InternalServerErrorException(error);
         }
