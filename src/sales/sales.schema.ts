@@ -70,8 +70,21 @@ class Returns {
     @Prop({ default: Date.now })
     returnedAt: Date;
 }
-
 const ReturnsSchema = SchemaFactory.createForClass(Returns);
+
+@Schema()
+class Charges {
+    @Prop()
+    title: string;
+
+    @Prop()
+    description: string;
+
+    @Prop()
+    amount: number;
+}
+const ChargesSchema = SchemaFactory.createForClass(Charges);
+
 
 @Schema({ timestamps: true })
 
@@ -111,15 +124,20 @@ export class Sale {
     @Prop({ type: Types.ObjectId, ref: 'Bank', required: true })
     bank: Types.ObjectId;
 
-
     @Prop({ type: [ReturnsSchema] })
     returns: Returns[]
+
+    @Prop({ type: Types.ObjectId, ref: 'Customer', required: true })
+    customer: Types.ObjectId;
 
     @Prop({ default: Date.now() })
     transactionDate: Date;
 
     @Prop({ required: true })
     location: string;
+
+    @Prop({ type: [ChargesSchema] })
+    charges: Charges[];
 
 }
 

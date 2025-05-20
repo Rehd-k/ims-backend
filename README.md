@@ -105,3 +105,11 @@ Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
  - if purchases are updated to increase or decrease the diffrernce is added to product quantiy (if + value it increases , if  - value it decreases) 
  - damages are removed from the over all quanity of the goods
  - when new outstanding payment is added less from debt
+
+
+
+
+ngrok http --url=precious-smooth-dove.ngrok-free.app 4000
+
+
+https://chatgpt.com/share/6824ff49-c598-8011-9c9e-0b4e41182c6c

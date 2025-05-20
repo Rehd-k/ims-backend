@@ -19,29 +19,110 @@ export class PurchasesService {
             await this.supplierService.addOrder(createdPurchase.supplier, order._id);
             return order
         } catch (error) {
-            console.error(error);
+
             throw new BadRequestException('Failed to create purchase');
         }
 
     }
 
-    async getDashboardData(id: string): Promise<{ totalPurchases: number; totalPayableSum: number, damagedGoods: number, debt: number, expiredGoods: number }[]> {
-        const result = await this.purchaseModel.aggregate([
-            { $match: { productId: id } }, // Filter documents containing the productId
-            { $unwind: "$damagedGoods" },
+    async getDashboardData(id: string) {
+        const pipeline = [
+            { $match: { productId: id } },
             {
-
+                $addFields: {
+                    unitPrice: { $cond: [{ $eq: ["$quantity", 0] }, 0, { $divide: ["$total", "$quantity"] }] },
+                    totalSoldAmount: { $sum: "$sold.amount" },
+                    totalSoldValue: {
+                        $sum: {
+                            $map: {
+                                input: "$sold",
+                                as: "s",
+                                in: { $multiply: ["$$s.amount", "$$s.price"] }
+                            }
+                        }
+                    },
+                    totalDamagedQuantity: {
+                        $cond: [
+                            { $isArray: "$damagedGoods" },
+                            { $sum: "$damagedGoods.quantity" },
+                            "$damagedGoods.quantity"
+                        ]
+                    },
+                    totalDamagedValue: {
+                        $cond: [
+                            { $isArray: "$damagedGoods" },
+                            { $sum: { $map: { input: "$damagedGoods", as: "d", in: { $multiply: ["$$d.quantity", "$unitPrice"] } } } },
+                            { $multiply: ["$damagedGoods.quantity", "$unitPrice"] }
+                        ]
+                    },
+                    totalExpiredQuantity: {
+                        $cond: [
+                            { $isArray: "$damagedGoods" },
+                            { $sum: { $map: { input: "$damagedGoods", as: "d", in: { $cond: [{ $eq: ["$$d.type", "expired"] }, "$$d.quantity", 0] } } } },
+                            { $cond: [{ $eq: ["$damagedGoods.type", "expired"] }, "$damagedGoods.quantity", 0] }
+                        ]
+                    },
+                    totalExpiredValue: {
+                        $cond: [
+                            { $isArray: "$damagedGoods" },
+                            { $sum: { $map: { input: "$damagedGoods", as: "d", in: { $cond: [{ $eq: ["$$d.type", "expired"] }, { $multiply: ["$$d.quantity", "$unitPrice"] }, 0] } } } },
+                            { $cond: [{ $eq: ["$damagedGoods.type", "expired"] }, { $multiply: ["$damagedGoods.quantity", "$unitPrice"] }, 0] }
+                        ]
+                    }
+                }
+            },
+            {
                 $group: {
-                    _id: "$damagedGoods",
+                    _id: null,
+                    totalSales: { $sum: "$totalSoldAmount" },
+                    totalSalesValue: { $sum: "$totalSoldValue" },
                     totalPurchases: { $sum: 1 },
-                    totalPayableSum: { $sum: "$totalPayable" },
-                    damagedGoods: { $sum: "$damagedGoods.quantity" },
-                    debt: { $sum: "$debt" },
-                    expiredGoods: { $sum: { $gte: ["$expiryDate", new Date()] } } //come back to this
-
+                    totalPurchasesValue: { $sum: { $multiply: ["$quantity", "$unitPrice"] } },
+                    // Only change this line to show profit only for sold items:
+                    totalProfit: { $sum: { $subtract: ["$totalSoldValue", { $multiply: ["$totalSoldAmount", "$unitPrice"] }] } },
+                    quantity: { $sum: "$quantity" },
+                    totalDamagedQuantity: { $sum: "$totalDamagedQuantity" },
+                    totalDamagedValue: { $sum: "$totalDamagedValue" },
+                    totalExpiredQuantity: { $sum: "$totalExpiredQuantity" },
+                    totalExpiredValue: { $sum: "$totalExpiredValue" }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    totalSales: 1,
+                    totalSalesValue: 1,
+                    totalPurchases: 1,
+                    totalPurchasesValue: 1,
+                    totalProfit: 1,
+                    quantity: 1,
+                    totalDamagedQuantity: 1,
+                    totalDamagedValue: 1,
+                    totalExpiredQuantity: 1,
+                    totalExpiredValue: 1
                 }
             }
-        ]);
+        ];
+
+        const noOrder = [
+            {
+                totalSales: 0,
+                totalSalesValue: 0,
+                totalPurchases: 0,
+                totalPurchasesValue: 0,
+                totalProfit: 0,
+                quantity: 0,
+                totalDamagedQuantity: 0,
+                totalDamagedValue: 0,
+                totalExpiredQuantity: 0,
+                totalExpiredValue: 0
+            }
+        ]
+
+        const result = await this.purchaseModel.aggregate(pipeline).exec();
+        if (result.length === 0) {
+            return noOrder;
+        }
         return result;
     }
 
@@ -92,6 +173,12 @@ export class PurchasesService {
             });
             if (parsedFilter.supplier === '') {
                 delete parsedFilter.supplier
+
+                delete parsedFilter.status
+            }
+
+            if (parsedFilter.status === '') {
+                delete parsedFilter.status
             }
             const purchases = await this.purchaseModel
                 .find({ ...parsedFilter, location: req.user.location }) // Apply filtering
@@ -104,14 +191,12 @@ export class PurchasesService {
                     select: 'name' // Selecting only the 'name' field from the supplier
                 })
                 .exec();
-
-                console.log(purchases);
             const totalDocuments = await this.purchaseModel
                 .countDocuments({ ...parsedFilter, location: req.user.location }); // Count total documents matching the filter
-      
+
             return { purchases, totalDocuments };
         } catch (error) {
-            console.error(error);
+
             throw new BadRequestException(error);
         }
     }
@@ -131,7 +216,7 @@ export class PurchasesService {
             await product.save();
             await purchace.save();
         } catch (error) {
-            console.error(error);
+
         }
 
     }

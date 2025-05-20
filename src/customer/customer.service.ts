@@ -24,7 +24,7 @@ export class CustomerService {
             }
             return customer.save();
         } catch (error) {
-            console.error(error);
+            
             throw new BadRequestException(error);
         }
 
@@ -58,7 +58,7 @@ export class CustomerService {
                 .select(select)
                 .exec()
         } catch (error) {
-            console.error(error);
+            
             throw new BadRequestException(error);
         }
     }

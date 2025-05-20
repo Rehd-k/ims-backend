@@ -8,6 +8,7 @@ import { Sale, SaleSchema } from './sales.schema';
 import { PurchasesModule } from 'src/purchases/purchases.module';
 import { CustomerModule } from 'src/customer/customer.module';
 import { ActivityModule } from 'src/activity/activity.module';
+import { PdfReceiptService } from './pdf.service';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { ActivityModule } from 'src/activity/activity.module';
     PurchasesModule,
     ActivityModule
   ],
-  providers: [SalesService],
+  providers: [SalesService, PdfReceiptService],
   controllers: [SalesController],
   exports: [SalesService]
 })

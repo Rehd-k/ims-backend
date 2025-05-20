@@ -33,7 +33,7 @@ export class ProductService {
         const parsedFilter = JSON.parse(filter);
         const parsedSort = JSON.parse(sort);
         try {
-         
+
 
             const products = await this.productModel
                 .find({ ...parsedFilter, location: req.user.location })
@@ -43,7 +43,7 @@ export class ProductService {
                 .select(select)
                 .exec();
 
-           
+
             const totalDocuments = await this.productModel
                 .countDocuments({ ...parsedFilter, location: req.user.location })
                 .exec();

@@ -23,6 +23,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TodoModule } from './todo/todo.module';
 import { InvoiceModule } from './invoice/invoice.module';
 import { SettingsModule } from './settings/settings.module';
+import { ChargesModule } from './charges/charges.module';
 
 @Module({
   imports: [
@@ -56,7 +57,8 @@ import { SettingsModule } from './settings/settings.module';
     BanksModule,
     TodoModule,
     InvoiceModule,
-    SettingsModule
+    SettingsModule,
+    ChargesModule
   ],
   controllers: [AppController],
   providers: [AppService],

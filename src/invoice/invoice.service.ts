@@ -108,7 +108,7 @@ export class InvoiceService {
 
     const media = new MessageMedia(
       'application/pdf',
-      pdf.toString('base64'),
+      pdf.toString('base64'), 
       `invoice_for_${invoice.customer.name}.pdf`,
     );
 

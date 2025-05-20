@@ -22,6 +22,15 @@ export class SalesController {
     }
 
     @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
+    @Get('/send-whatsapp/:id')
+    sendMessage(
+        @Param('id') id: string
+    ) {
+        return this.salesService.sendMessage(id);
+    }
+
+
+    @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
     @Get()
     findAll(
         @Query() query: QueryDto, @Req() req: any
