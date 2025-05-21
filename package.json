@@ -5,10 +5,21 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "main": "dist-obf/main.js",
+  "bin": "dist-obf/main.js",
+  "pkg": {
+    "scripts": "dist-obf/**/*.js",
+    "assets": [
+      ".env"
+    ],
+    "targets": [
+      "node18-win-x64"
+    ]
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
+    "start": "node dist/main",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
@@ -33,13 +44,10 @@
     "nestjs-pino": "^4.3.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
-    "pdfkit": "^0.17.0",
     "pino-http": "^10.4.0",
     "pino-pretty": "^13.0.0",
-    "qrcode-terminal": "^0.12.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1",
-    "whatsapp-web.js": "^1.27.0"
+    "rxjs": "^7.8.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.4.9",
@@ -49,8 +57,6 @@
     "@types/jest": "^29.5.14",
     "@types/node": "^20.17.14",
     "@types/passport-jwt": "^4.0.1",
-    "@types/pdfkit": "^0.13.9",
-    "@types/qrcode-terminal": "^0.12.2",
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^8.21.0",
     "@typescript-eslint/parser": "^8.21.0",

@@ -8,10 +8,7 @@ import { PurchasesService } from 'src/purchases/purchases.service';
 import { FilterQuery } from 'mongoose';
 import { CustomerService } from 'src/customer/customer.service';
 import { ActivityService } from 'src/activity/activity.service';
-import { PdfReceiptService, ReceiptData } from './pdf.service';
-import { MessageMedia } from 'whatsapp-web.js';
-import path from 'path';
-import * as fs from 'fs';
+
 
 @Injectable()
 export class SalesService {
@@ -22,7 +19,6 @@ export class SalesService {
         private activityService: ActivityService,
         private customerService: CustomerService,
         private purchaseService: PurchasesService,
-        private pdfGeneratorService: PdfReceiptService
     ) { }
 
     async doSell(sellData: any, req: any): Promise<any> {
@@ -310,7 +306,7 @@ export class SalesService {
             const totalDocuments = await this.saleModel
                 .countDocuments({ ...parsedFilter, location: req.user.location }); // Count total documents matching the filter
 
-            
+
             return { sales, handlers, totalDocuments, summary };
         } catch (error) {
             throw new InternalServerErrorException(error)
@@ -460,74 +456,6 @@ export class SalesService {
 
     async getSalesData(query: QueryDto): Promise<any> {
     };
-
-
-    async sendMessage(id: string) {
-        const sale = await this.saleModel.findById(id).populate('customer') as any;
-        const now = new Date(sale.transactionDate);
-        const discountPercentage = sale.discount && sale.totalAmount
-            ? (sale.discount / sale.totalAmount) * 100
-            : 0;
-        const mockReceiptData: ReceiptData = {
-            store_logo_text: "MyStore",
-            store_name: "Awesome Goods",
-            store_address: "456 Node Avenue, TypeScript City, TS 67890",
-            store_phone: "555-987-6543",
-            store_email: "contact@awesomegoods-nestjs.com",
-            store_website: "www.awesomegoods-nestjs.com",
-
-            receipt_no: sale.transactionId,
-            date: `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`,
-            time: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`,
-            cashier_name: `${sale.handler}`,
-            terminal_id: "----",
-
-            customer_name: `${sale.customer.name}`,
-            customer_loyalty_id: `${sale.customer._id}`,
-
-            items: sale.products.map((product: any) => ({
-                name: product.title,
-                quantity: product.quantity,
-                price: product.price,
-                subtotal: product.total
-            })),
-
-            currency_symbol: '\u20A6',
-            discount_percentage: discountPercentage,
-            tax_percentage: sale.tax ? (sale.tax / sale.totalAmount) * 100 : 0,
-
-            payment_method: sale.paymentMethod,
-            // amount_tendered: 50.00, // Calculated below
-            footer_message_line1: "Thank you for Shopping with us!",
-            footer_message_line2: "Please Come Back For More.",
-            barcode_data: sale.transactionId, // Example data for barcode
-            sub_total_amount: 0,
-            grand_total_amount: 0
-        };
-
-        // Calculate totals
-        mockReceiptData.sub_total_amount = mockReceiptData.items.reduce((sum, item) => sum + item.subtotal, 0);
-        mockReceiptData.discount_amount = (mockReceiptData.sub_total_amount * (mockReceiptData.discount_percentage || 0)) / 100;
-        const taxableAmount = mockReceiptData.sub_total_amount - mockReceiptData.discount_amount;
-        mockReceiptData.tax_amount = (taxableAmount * (mockReceiptData.tax_percentage || 0)) / 100;
-        mockReceiptData.grand_total_amount = taxableAmount + mockReceiptData.tax_amount;
-
-        if (mockReceiptData.grand_total_amount < 45) { // Example: if total is less than 45, tender 50
-            mockReceiptData.amount_tendered = 50.00;
-            mockReceiptData.change_due = mockReceiptData.amount_tendered - mockReceiptData.grand_total_amount;
-        } else {
-            mockReceiptData.amount_tendered = mockReceiptData.grand_total_amount;
-            mockReceiptData.change_due = 0;
-        }
-
-
-        const pdfBuffer = await this.pdfGeneratorService.generateReceiptPdf(mockReceiptData);
-
-
-        fs.writeFileSync('src/sales/pdf.pdf', pdfBuffer);
-        this.pdfGeneratorService['logger'].log(`NestJS POS Receipt saved to: src/sales/pdf.pdf`);
-
-    }
 
 
     formatPhoneNumber(phone: string): string {

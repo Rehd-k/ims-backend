@@ -4,8 +4,6 @@ import { InvoiceController } from './invoice.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Invoice, InvoiceSchema } from './invoice.schema';
 import { ActivityModule } from 'src/activity/activity.module';
-import { PdfGeneratorService } from './pdf.service';
-import { WhatsappService } from 'src/whatsapp/whatsapp.service';
 
 @Module({
   imports: [
@@ -13,7 +11,8 @@ import { WhatsappService } from 'src/whatsapp/whatsapp.service';
     ActivityModule
   ],
   controllers: [InvoiceController],
-  providers: [InvoiceService, PdfGeneratorService],
+  providers: [InvoiceService],
+
 
   // WhatsappService
 

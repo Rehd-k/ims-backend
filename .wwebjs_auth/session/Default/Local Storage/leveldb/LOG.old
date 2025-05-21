@@ -1,6 +1,0 @@
-2025/05/01-19:57:22.234 3ed0 Reusing MANIFEST C:\Users\REHD\Documents\ims\backend\.wwebjs_auth\session\Default\Local Storage\leveldb/MANIFEST-000001
-2025/05/01-19:57:22.235 3ed0 Recovering log #27
-2025/05/01-19:57:22.236 3ed0 Reusing old log C:\Users\REHD\Documents\ims\backend\.wwebjs_auth\session\Default\Local Storage\leveldb/000027.log 
-2025/05/01-20:17:43.376 560 Level-0 table #32: started
-2025/05/01-20:17:43.389 560 Level-0 table #32: 15222 bytes OK
-2025/05/01-20:17:43.394 560 Delete type=0 #27

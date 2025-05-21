@@ -26,7 +26,7 @@ export class SalesController {
     sendMessage(
         @Param('id') id: string
     ) {
-        return this.salesService.sendMessage(id);
+ 
     }
 
 

@@ -6,19 +6,13 @@ import { Invoice } from './invoice.schema';
 import { Model } from 'mongoose';
 import { ActivityService } from 'src/activity/activity.service';
 import { QueryDto } from 'src/product/query.dto';
-import { PdfGeneratorService } from './pdf.service';
-
-import { MessageMedia } from 'whatsapp-web.js';
-import { WhatsappService } from 'src/whatsapp/whatsapp.service';
-import path from 'path';
-import * as fs from 'fs';
 
 
 
 @Injectable()
 export class InvoiceService {
-// , private whatsappService: WhatsappService
-  constructor(@InjectModel(Invoice.name) private readonly invoiceModel: Model<Invoice>, private logService: ActivityService, private pdfGeneratorService: PdfGeneratorService) { }
+  // , private whatsappService: WhatsappService
+  constructor(@InjectModel(Invoice.name) private readonly invoiceModel: Model<Invoice>, private logService: ActivityService) { }
   async create(createInvoiceDto: CreateInvoiceDto, req: any) {
 
     createInvoiceDto['initiator'] = req.user.username
@@ -101,19 +95,19 @@ export class InvoiceService {
 
   async sendMessage(id: string) {
     const invoice = await this.invoiceModel.findById(id).populate('customer') as any;
-    const pdf = await this.pdfGeneratorService.generateInvoicePdf(invoice)
+
 
     invoice.customer.phone_number = this.formatPhoneNumber(invoice.customer.phone_number)
-    // fs.writeFileSync('src/invoice/pdf.pdf', pdf)
 
-    const media = new MessageMedia(
-      'application/pdf',
-      pdf.toString('base64'), 
-      `invoice_for_${invoice.customer.name}.pdf`,
-    );
+
+    // const media = new MessageMedia(
+    //   'application/pdf',
+    //   pdf.toString('base64'),
+    //   `invoice_for_${invoice.customer.name}.pdf`,
+    // );
 
     // const messade = await this.whatsappService.sendMessage(invoice.customer.phone_number, media);
-
+    // return messade;
   }
 
   async remove(filter: any, req: any) {
