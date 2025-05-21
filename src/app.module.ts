@@ -24,6 +24,13 @@ import { TodoModule } from './todo/todo.module';
 import { InvoiceModule } from './invoice/invoice.module';
 import { SettingsModule } from './settings/settings.module';
 import { ChargesModule } from './charges/charges.module';
+import * as fs from 'fs';
+
+
+// Ensure logs directory exists
+if (!fs.existsSync('./logs/app.log')) {
+  fs.mkdirSync('./logs/app.log');
+}
 
 @Module({
   imports: [
@@ -42,14 +49,8 @@ import { ChargesModule } from './charges/charges.module';
     PurchasesModule,
     LoggerModule.forRoot({
       pinoHttp: {
-        level: 'info', // Set log level
-        transport: process.env.NODE_ENV !== 'production' ? {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            translateTime: 'HH:MM:ss',
-          },
-        } : undefined, // Pretty logs in development
+        level: 'info',
+        stream: fs.createWriteStream('./logs/app.log', { flags: 'a' }), // Log only to file
       },
     }),
     CategoryModule,
