@@ -9,6 +9,7 @@ import { PurchasesModule } from 'src/purchases/purchases.module';
 import { CustomerModule } from 'src/customer/customer.module';
 import { ActivityModule } from 'src/activity/activity.module';
 import { PdfReceiptService } from './pdf.service';
+import { WhatsappService } from 'src/whatsapp/whatsapp.service';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { PdfReceiptService } from './pdf.service';
     PurchasesModule,
     ActivityModule
   ],
-  providers: [SalesService, PdfReceiptService],
+  providers: [SalesService, PdfReceiptService, WhatsappService],
   controllers: [SalesController],
   exports: [SalesService]
 })
