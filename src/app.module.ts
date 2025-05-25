@@ -28,14 +28,27 @@ import * as fs from 'fs';
 
 
 // Ensure logs directory exists
-if (!fs.existsSync('./logs/app.log')) {
-  fs.mkdirSync('./logs/app.log');
+if (!fs.existsSync('./logs')) {
+  fs.mkdirSync('./logs');
 }
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    MongooseModule.forRoot(process.env.NODE_ENV === 'production' ? process.env.DATABASE_PROD : process.env.DATABASE_DEV),
+    MongooseModule.forRootAsync({
+      useFactory: async () => {
+        const uri = 'mongodb://127.0.0.1:27017/ims';
+        return {
+          uri,
+          connectionFactory: (connection) => {
+            connection.once('open', () => {
+              console.log('DB started');
+            });
+            return connection;
+          },
+        };
+      },
+    }),
     UserModule,
     AuthModule,
     ProductModule,
