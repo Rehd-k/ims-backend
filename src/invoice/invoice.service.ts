@@ -17,8 +17,7 @@ import * as fs from 'fs';
 
 @Injectable()
 export class InvoiceService {
-// , private whatsappService: WhatsappService
-  constructor(@InjectModel(Invoice.name) private readonly invoiceModel: Model<Invoice>, private logService: ActivityService, private pdfGeneratorService: PdfGeneratorService) { }
+  constructor(@InjectModel(Invoice.name) private readonly invoiceModel: Model<Invoice>, private logService: ActivityService, private pdfGeneratorService: PdfGeneratorService, private whatsappService: WhatsappService) { }
   async create(createInvoiceDto: CreateInvoiceDto, req: any) {
 
     createInvoiceDto['initiator'] = req.user.username
@@ -108,12 +107,12 @@ export class InvoiceService {
 
     const media = new MessageMedia(
       'application/pdf',
-      pdf.toString('base64'), 
+      pdf.toString('base64'),
       `invoice_for_${invoice.customer.name}.pdf`,
     );
 
-    // const messade = await this.whatsappService.sendMessage(invoice.customer.phone_number, media);
-
+    const messade = await this.whatsappService.sendMessage(invoice.customer.phone_number, media);
+    return messade;
   }
 
   async remove(filter: any, req: any) {

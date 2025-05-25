@@ -13,7 +13,7 @@ import { WhatsappService } from 'src/whatsapp/whatsapp.service';
     ActivityModule
   ],
   controllers: [InvoiceController],
-  providers: [InvoiceService, PdfGeneratorService],
+  providers: [InvoiceService, PdfGeneratorService, WhatsappService],
 
   // WhatsappService
 
