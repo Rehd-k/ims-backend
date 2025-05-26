@@ -13,11 +13,11 @@ import { WhatsappService } from 'src/whatsapp/whatsapp.service';
 import path from 'path';
 import * as fs from 'fs';
 
-
+// private whatsappService: WhatsappService
 
 @Injectable()
 export class InvoiceService {
-  constructor(@InjectModel(Invoice.name) private readonly invoiceModel: Model<Invoice>, private logService: ActivityService, private pdfGeneratorService: PdfGeneratorService, private whatsappService: WhatsappService) { }
+  constructor(@InjectModel(Invoice.name) private readonly invoiceModel: Model<Invoice>, private logService: ActivityService, private pdfGeneratorService: PdfGeneratorService) { }
   async create(createInvoiceDto: CreateInvoiceDto, req: any) {
 
     createInvoiceDto['initiator'] = req.user.username
@@ -111,8 +111,8 @@ export class InvoiceService {
       `invoice_for_${invoice.customer.name}.pdf`,
     );
 
-    const messade = await this.whatsappService.sendMessage(invoice.customer.phone_number, media);
-    return messade;
+    // const messade = await this.whatsappService.sendMessage(invoice.customer.phone_number, media);
+    // return messade;
   }
 
   async remove(filter: any, req: any) {

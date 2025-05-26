@@ -36,6 +36,11 @@ build/Release
 # Dependency directories
 node_modules/
 jspm_packages/
+.wwebjs_auth/
+.wwebjs_cache/
+wwebjs_auth
+wwebjs_cache
+
 
 # TypeScript v1 declaration files
 typings/
@@ -62,3 +67,7 @@ typings/
 # NestJS build output
 dist/
 node_modules
+wwebjs_auth/
+wwebjs_cache/
+.wwebjs_auth
+.wwebjs_cache

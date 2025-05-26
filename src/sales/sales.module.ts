@@ -21,7 +21,8 @@ import { WhatsappService } from 'src/whatsapp/whatsapp.service';
     PurchasesModule,
     ActivityModule
   ],
-  providers: [SalesService, PdfReceiptService, WhatsappService],
+  // WhatsappService
+  providers: [SalesService, PdfReceiptService],
   controllers: [SalesController],
   exports: [SalesService]
 })

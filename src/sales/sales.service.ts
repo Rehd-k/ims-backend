@@ -24,7 +24,7 @@ export class SalesService {
         private customerService: CustomerService,
         private purchaseService: PurchasesService,
         private pdfGeneratorService: PdfReceiptService,
-        private whatsappService: WhatsappService
+        // private whatsappService: WhatsappService
     ) { }
 
     async doSell(sellData: any, req: any): Promise<any> {
@@ -530,8 +530,8 @@ export class SalesService {
             `receipt_for_${sale.customer.name}.pdf`,
         );
 
-        const messade = await this.whatsappService.sendMessage(sale.customer.phone_number, media);
-        return messade;
+        // const messade = await this.whatsappService.sendMessage(sale.customer.phone_number, media);
+        // return messade;
 
         // fs.writeFileSync('src/sales/pdf.pdf', pdfBuffer);
         this.pdfGeneratorService['logger'].log(`NestJS POS Receipt saved to: src/sales/pdf.pdf`);
