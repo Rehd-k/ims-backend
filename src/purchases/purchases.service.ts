@@ -5,6 +5,7 @@ import { Purchase } from './purchases.schema';
 import { SupplierService } from 'src/supplier/supplier.service';
 import { ProductService } from 'src/product/product.service';
 import { QueryDto } from 'src/product/query.dto';
+import { log } from 'src/do_logger';
 
 @Injectable()
 export class PurchasesService {
@@ -20,7 +21,7 @@ export class PurchasesService {
             await this.supplierService.addOrder(createdPurchase.supplier, order._id);
             return order
         } catch (error) {
-
+            log(`Failed to create purchase ${error}`, "ERROR")
             throw new BadRequestException('Failed to create purchase');
         }
 
@@ -131,16 +132,22 @@ export class PurchasesService {
         date: Date;
         amountPaid: { transfer: number, cash: number, card: number }
     }): Promise<any> {
-        const order = await this.purchaseModel.findById(orderId);
-        if (!order) {
-            throw new BadRequestException('Order not found');
+        try {
+            const order = await this.purchaseModel.findById(orderId);
+            if (!order) {
+                throw new BadRequestException('Order not found');
+            }
+
+            order.outStandingPayments.push(payment);
+            let paymentTotal = payment.amountPaid.card + payment.amountPaid.cash + payment.amountPaid.transfer
+            order.debt = order.debt - paymentTotal;
+
+            return order.save();
+        } catch (error) {
+            log(`Record Payment error ${error}`, "ERROR")
+            throw new BadRequestException('Record Payment error');
         }
 
-        order.outStandingPayments.push(payment);
-        let paymentTotal = payment.amountPaid.card + payment.amountPaid.cash + payment.amountPaid.transfer
-        order.debt = order.debt - paymentTotal;
-
-        return order.save();
     }
 
     async findAll(query: QueryDto, req: any): Promise<{ purchases: Purchase[], totalDocuments: number }> {
@@ -197,13 +204,19 @@ export class PurchasesService {
 
             return { purchases, totalDocuments };
         } catch (error) {
-
+            log(`getting all purchases error ${error}`, "ERROR")
             throw new BadRequestException(error);
         }
     }
 
     async findOne(id: string): Promise<Purchase> {
-        return this.purchaseModel.findById(id).exec();
+        try {
+            return this.purchaseModel.findById(id).exec();
+        } catch (error) {
+            log(`getting one purchases error ${error}`, "ERROR")
+            throw new BadRequestException(error);
+        }
+
     }
 
     async update(id: string, updatePurchaseDto: any) {
@@ -217,35 +230,54 @@ export class PurchasesService {
             await product.save();
             await purchace.save();
         } catch (error) {
-
+            log(`updating one purchases error ${error}`, "ERROR")
+            throw new BadRequestException(error);
         }
 
     }
 
     async remove(id: string): Promise<Purchase> {
-        return this.purchaseModel.findByIdAndDelete(id).exec();
+        try {
+            return this.purchaseModel.findByIdAndDelete(id).exec();
+        } catch (error) {
+            log(`removeing one purchases error ${error}`, "ERROR")
+            throw new BadRequestException(error);
+        }
+
     }
 
 
     async editSoldQuantity(id: string, amount: number, price: number) {
-        const purchase = await this.purchaseModel.findById(id)
-        const productindex = purchase.sold.findIndex((item) => item.price == price)
-        purchase.sold[productindex].amount -= amount
-        if (purchase.sold[productindex].amount < 1) {
-            purchase.sold.splice(productindex, 1)
+        try {
+            const purchase = await this.purchaseModel.findById(id)
+            const productindex = purchase.sold.findIndex((item) => item.price == price)
+            purchase.sold[productindex].amount -= amount
+            if (purchase.sold[productindex].amount < 1) {
+                purchase.sold.splice(productindex, 1)
+            }
+            await purchase.save();
+            return purchase
+        } catch (error) {
+            log(`removeing updating sold purchases error ${error}`, "ERROR")
+            throw new BadRequestException(error);
         }
-        await purchase.save();
-        return purchase
+
     }
 
 
     async findFirstUnsoldPurchase(productId: string, req: any) {
-        const purchase = await this.purchaseModel.findOne({
-            productId: productId,
-            $expr: { $lt: [{ $sum: "$sold.amount" }, "$quantity"] },
-            location: req.user.location
-        }).sort({ createdAt: 1 }).exec();
+        try {
+            const purchase = await this.purchaseModel.findOne({
+                productId: productId,
+                $expr: { $lt: [{ $sum: "$sold.amount" }, "$quantity"] },
+                location: req.user.location
+            }).sort({ createdAt: 1 }).exec();
 
-        return purchase;
+            return purchase;
+        } catch (error) {
+            log(`${error}`, "ERROR")
+            throw new BadRequestException(error);
+        }
+
     }
 }

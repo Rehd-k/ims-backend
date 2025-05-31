@@ -5,6 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Todo } from './todo.schema';
 import { QueryDto } from 'src/product/query.dto';
+import { log } from 'src/do_logger';
 
 @Injectable()
 export class TodoService {
@@ -16,51 +17,76 @@ export class TodoService {
       const newTodo = await this.todoModel.create(createTodoDto)
       return newTodo;
     } catch (error) {
+      log(`Error creating todo ${error}`, "ERROR")
       throw new BadRequestException(error)
     }
 
   }
 
   async findAll(query: QueryDto, req: any) {
-    const {
-      filter = '{}',
-      sort = '{}',
-      skip = 0,
-      select = '',
-      limit = 0
-    } = query;
-    const parsedFilter = JSON.parse(filter);
-    const parsedSort = JSON.parse(sort);
-    const todo = await this.todoModel
-      .find({ ...parsedFilter, location: req.user.location })
-      .sort(parsedSort)
-      .skip(Number(skip))
-      .limit(Number(limit))
-      .select(select)
-      .exec();
-    return todo;
+    try {
+      const {
+        filter = '{}',
+        sort = '{}',
+        skip = 0,
+        select = '',
+        limit = 0
+      } = query;
+      const parsedFilter = JSON.parse(filter);
+      const parsedSort = JSON.parse(sort);
+      const todo = await this.todoModel
+        .find({ ...parsedFilter, location: req.user.location })
+        .sort(parsedSort)
+        .skip(Number(skip))
+        .limit(Number(limit))
+        .select(select)
+        .exec();
+      return todo;
+    } catch (error) {
+      log(`Error getting all todo ${error}`, "ERROR")
+      throw new BadRequestException(error)
+    }
+
 
   }
 
   async findOne(id: string) {
-    return await this.todoModel.findById(id)
+    try {
+      return await this.todoModel.findById(id)
+    } catch (error) {
+      log(`Error finding one todo ${error}`, "ERROR")
+      throw new BadRequestException(error)
+    }
+
   }
 
 
 
   async update(id: string, updateTodoDto: UpdateTodoDto, req: any) {
-    const updateFields = {};
-    for (const key in updateTodoDto) {
-      if (updateTodoDto.hasOwnProperty(key)) {
-        updateFields[key] = updateTodoDto[key];
+    try {
+      const updateFields = {};
+      for (const key in updateTodoDto) {
+        if (updateTodoDto.hasOwnProperty(key)) {
+          updateFields[key] = updateTodoDto[key];
+        }
       }
+      const updatedTodo = await this.todoModel.findByIdAndUpdate(id, { $set: updateFields }, { new: true }).exec();
+      return updatedTodo;
+    } catch (error) {
+      log(`Error updaing one todo ${error}`, "ERROR")
+      throw new BadRequestException(error)
     }
-    const updatedTodo = await this.todoModel.findByIdAndUpdate(id, { $set: updateFields }, { new: true }).exec();
-    return updatedTodo;
+
   }
 
 
   async remove(id: string) {
-    await this.todoModel.findByIdAndDelete(id);
+    try {
+      await this.todoModel.findByIdAndDelete(id);
+    } catch (error) {
+      log(`Error removing one todo ${error}`, "ERROR")
+      throw new BadRequestException(error)
+    }
+
   }
 }

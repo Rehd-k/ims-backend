@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -6,6 +6,7 @@ import { Invoice } from './invoice.schema';
 import { Model } from 'mongoose';
 import { ActivityService } from 'src/activity/activity.service';
 import { QueryDto } from 'src/product/query.dto';
+import { log } from 'src/do_logger';
 
 
 
@@ -14,12 +15,17 @@ export class InvoiceService {
   // , private whatsappService: WhatsappService
   constructor(@InjectModel(Invoice.name) private readonly invoiceModel: Model<Invoice>, private logService: ActivityService) { }
   async create(createInvoiceDto: CreateInvoiceDto, req: any) {
+    try {
+      createInvoiceDto['initiator'] = req.user.username
+      createInvoiceDto['location'] = req.user.location;
+      const invoice = await this.invoiceModel.create(createInvoiceDto)
+      this.logService.logAction(req.user.userId, req.user.username, 'Create Invoice', `Created Invoice for user with id ${invoice.customer}`)
+      return invoice;
+    } catch (error) {
+      log(`error creating  invoice ${error}`, "ERROR")
+      throw new BadRequestException(error);
+    }
 
-    createInvoiceDto['initiator'] = req.user.username
-    createInvoiceDto['location'] = req.user.location;
-    const invoice = await this.invoiceModel.create(createInvoiceDto)
-    this.logService.logAction(req.user.userId, req.user.username, 'Create Invoice', `Created Invoice for user with id ${invoice.customer}`)
-    return invoice;
   }
 
   async findAll(query: QueryDto, req: any): Promise<Invoice[]> {
@@ -68,12 +74,19 @@ export class InvoiceService {
         .exec();
       return result;
     } catch (error) {
+      log(`Error fetching invoices: ${error.message}`, "ERROR")
       throw new Error(`Error fetching invoices: ${error.message}`);
     }
   }
 
   findOne(filter: string) {
-    return this.invoiceModel.findOne(JSON.parse(filter));
+    try {
+      return this.invoiceModel.findOne(JSON.parse(filter));
+    } catch (error) {
+      log(`Error fetching one invoice: ${error.message}`, "ERROR")
+      throw new Error(`Error fetching invoices: ${error.message}`);
+    }
+
   }
 
   async update(filter: string, updateInvoiceDto: UpdateInvoiceDto, req: any) {
@@ -88,9 +101,14 @@ export class InvoiceService {
     Object.keys(updateInvoiceDto).forEach(key => {
       invoice[key] = updateInvoiceDto[key];
     })
+    try {
+      await this.logService.logAction(req.user.userId, req.user.username, 'Update Invoice', `Updated Invoice with id ${filter}`)
+      return invoice.save();
+    } catch (error) {
+      log(`Error updating one invoice: ${error}`, "ERROR")
+      throw new Error(`Error updating invoices: ${error.message}`);
+    }
 
-    await this.logService.logAction(req.user.userId, req.user.username, 'Update Invoice', `Updated Invoice with id ${filter}`)
-    return invoice.save();
   }
 
   async sendMessage(id: string) {
@@ -111,9 +129,15 @@ export class InvoiceService {
   }
 
   async remove(filter: any, req: any) {
-    await this.invoiceModel.findOneAndDelete(filter)
-    await this.logService.logAction(req.user.userId, req.user.username, 'Remove Invoice', `Removed Invoice with filter ${JSON.stringify(filter)}`)
-    return true;
+    try {
+      await this.invoiceModel.findOneAndDelete(filter)
+      await this.logService.logAction(req.user.userId, req.user.username, 'Remove Invoice', `Removed Invoice with filter ${JSON.stringify(filter)}`)
+      return true;
+    } catch (error) {
+      log(`Error removing one invoice: ${error}`, "ERROR")
+      throw new Error(`Error removing invoices: ${error.message}`);
+    }
+
   }
 
   formatPhoneNumber(phone: string): string {

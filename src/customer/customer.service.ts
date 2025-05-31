@@ -4,6 +4,7 @@ import { Model, Types } from 'mongoose';
 import { QueryDto } from 'src/product/query.dto';
 import { Customer } from './customer.schema';
 import { error } from 'console';
+import { log } from 'src/do_logger';
 
 @Injectable()
 export class CustomerService {
@@ -25,7 +26,7 @@ export class CustomerService {
             customer.initiator = req.user.username;
             return customer.save();
         } catch (error) {
-
+            log(`Error create new   cusomter: ${error}`, "ERROR")
             throw new BadRequestException(error);
         }
 
@@ -59,66 +60,95 @@ export class CustomerService {
                 .select(select)
                 .exec()
         } catch (error) {
-
+            log(`Error getting all   cusomter: ${error}`, "ERROR")
             throw new BadRequestException(error);
         }
     }
 
     async addOrder(customerId: Types.ObjectId, orderId: Types.ObjectId, total_spent: number): Promise<any> {
+        try {
+            const customer = await this.customerModel.findById(customerId);
+            if (!customer) {
+                throw new BadRequestException('Customer not found');
+            }
+            customer.orders.push(orderId);
+            customer.total_spent += total_spent;
 
-        const customer = await this.customerModel.findById(customerId);
-        if (!customer) {
-            throw new BadRequestException('Customer not found');
+            await customer.save()
+        } catch (error) {
+            log(`Error creating order: ${error}`, "ERROR")
+            throw new BadRequestException(error);
         }
-        customer.orders.push(orderId);
-        customer.total_spent += total_spent;
 
-        await customer.save()
     }
 
     async addReturns(customerId: Types.ObjectId, orderId: Types.ObjectId): Promise<any> {
-        const customer = await this.customerModel.findById(customerId);
-        if (!customer) {
-            throw new BadRequestException('Customer not found');
-        }
-        customer.returns.push(orderId);
+        try {
+            const customer = await this.customerModel.findById(customerId);
+            if (!customer) {
+                throw new BadRequestException('Customer not found');
+            }
+            customer.returns.push(orderId);
 
-        await customer.save()
+            await customer.save()
+        } catch (error) {
+            log(`Error returning an order: ${error}`, "ERROR")
+            throw new BadRequestException(error);
+        }
+
     }
 
     async getCustomerDetails(customerId: string): Promise<any> {
-        return this.customerModel.findById(customerId).populate('orders.returns').exec();
+        try {
+            return this.customerModel.findById(customerId).populate('orders.returns').exec();
+        } catch (error) {
+            log(`Error returning an order: ${error}`, "ERROR")
+            throw new BadRequestException(error);
+        }
+
     }
     async updateCustomer(customerId: string, updateData: any): Promise<any> {
         const customer = await this.customerModel.findById(customerId);
         if (!customer) {
-            throw new BadRequestException('Customer not found');
+            log(`Customer not found`, "ERROR")
+            throw new BadRequestException(error);
         }
 
-
-        for (const key in updateData) {
-            if (updateData.hasOwnProperty(key)) {
-                if (key === 'increase' || key === 'decrease') {
-                    for (const field in updateData[key]) {
-                        if (updateData[key].hasOwnProperty(field)) {
-                            if (key === 'increase') {
-                                customer[field] += updateData[key][field];
-                            } else if (key === 'decrease') {
-                                customer[field] -= updateData[key][field];
+        try {
+            for (const key in updateData) {
+                if (updateData.hasOwnProperty(key)) {
+                    if (key === 'increase' || key === 'decrease') {
+                        for (const field in updateData[key]) {
+                            if (updateData[key].hasOwnProperty(field)) {
+                                if (key === 'increase') {
+                                    customer[field] += updateData[key][field];
+                                } else if (key === 'decrease') {
+                                    customer[field] -= updateData[key][field];
+                                }
                             }
                         }
+                    } else {
+                        customer[key] = updateData[key];
                     }
-                } else {
-                    customer[key] = updateData[key];
                 }
             }
+
+            return customer.save();
+        } catch (error) {
+            log(`error updating customers ${error}`, "ERROR")
+            throw new BadRequestException(error);
         }
 
-        return customer.save();
     }
 
     async deleteCustomer(customerId: string): Promise<any> {
-        return this.customerModel.findByIdAndDelete(customerId).exec();
+        try {
+            return this.customerModel.findByIdAndDelete(customerId).exec();
+        } catch (error) {
+            log(`error deleting customers ${error}`, "ERROR")
+            throw new BadRequestException(error);
+        }
+
     }
 
 

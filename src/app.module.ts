@@ -25,6 +25,7 @@ import { InvoiceModule } from './invoice/invoice.module';
 import { SettingsModule } from './settings/settings.module';
 import { ChargesModule } from './charges/charges.module';
 import * as fs from 'fs';
+import { log } from './do_logger';
 
 
 // Ensure logs directory exists
@@ -42,7 +43,7 @@ if (!fs.existsSync('./logs')) {
           uri,
           connectionFactory: (connection) => {
             connection.once('open', () => {
-              console.log('DB started');
+              log('DB started');
             });
             return connection;
           },

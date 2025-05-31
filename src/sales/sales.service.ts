@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { InventoryService } from 'src/product/inventory.service';
@@ -8,6 +8,7 @@ import { PurchasesService } from 'src/purchases/purchases.service';
 import { FilterQuery } from 'mongoose';
 import { CustomerService } from 'src/customer/customer.service';
 import { ActivityService } from 'src/activity/activity.service';
+import { log } from 'src/do_logger';
 
 
 @Injectable()
@@ -37,7 +38,8 @@ export class SalesService {
                         profit = profit + el.total_profit
                     }
                 } catch (error) {
-                    throw new InternalServerErrorException(error)
+                    log(`Error crating sell brakedown ${error}`, "ERROR")
+                    throw new BadRequestException(error);
                 }
             }
 
@@ -59,7 +61,7 @@ export class SalesService {
             await this.activityService.logAction(`${req.user.userId}`, req.user.username, 'Made Sales', `Transaction Id ${data.transactionId}`)
             return data
         } catch (error) {
-            console.log(error);
+            log(error, "ERROR")
             throw new InternalServerErrorException(error)
         }
 
@@ -222,7 +224,8 @@ export class SalesService {
             ]);
             return sales;
         } catch (error) {
-            throw new InternalServerErrorException(error);
+            log(`Error gettig single sale data ${error}`, "ERROR")
+            throw new BadRequestException(error);
         }
     }
 
@@ -232,7 +235,8 @@ export class SalesService {
         try {
             return await this.saleModel.find({ ...searchQuery, location: req.user.location }).exec();
         } catch (error) {
-            throw new InternalServerErrorException(error);
+            log(`Error searching ${error}`, "ERROR")
+            throw new BadRequestException(error);
         }
     }
 
@@ -270,7 +274,7 @@ export class SalesService {
                 delete parsedFilter.transactionDate
             }
 
-            console.log(parsedFilter)
+
             const totals = await this.saleModel.aggregate([
                 {
                     $match: { ...parsedFilter, location: req.user.location }
@@ -319,7 +323,7 @@ export class SalesService {
 
             return { sales, handlers, totalDocuments, summary };
         } catch (error) {
-            console.log(error)
+            log(error, "ERROR")
             throw new InternalServerErrorException(error)
         }
     }
@@ -328,7 +332,8 @@ export class SalesService {
         try {
             return await this.saleModel.findById(id).exec();
         } catch (error) {
-            throw new InternalServerErrorException(error)
+            log(`Error finding one ${error}`, "ERROR")
+            throw new BadRequestException(error);
         }
     }
 
@@ -347,7 +352,8 @@ export class SalesService {
             await this.activityService.logAction(`${req.user.userId}`, req.user.username, 'Update Sales', `Updated sale with transaction Id ${data.transactionId} with ${JSON.stringify(updateData)}`)
             return data
         } catch (error) {
-            throw new InternalServerErrorException(error)
+            log(`Error updaing one ${error}`, "ERROR")
+            throw new BadRequestException(error);
         }
     }
 
@@ -414,6 +420,8 @@ export class SalesService {
             await this.activityService.logAction(`${req.user.userId}`, req.user.username, 'Made Returns', `Made returns on transaction with Id ${data.transactionId}`)
             return sale;
         } catch (e) {
+            log(`Error returnig one ${e}`, "ERROR")
+            throw new BadRequestException(e);
         }
     }
 
@@ -423,7 +431,8 @@ export class SalesService {
             await this.activityService.logAction(`${req.user.userId}`, req.user.username, 'Deleted Transaction', `Made returns on transaction with Id ${id}`)
             return deleted
         } catch (error) {
-            throw new InternalServerErrorException(error)
+            log(`Error deleting one ${error}`, "ERROR")
+            throw new BadRequestException(error);
         }
     }
 

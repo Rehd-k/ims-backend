@@ -1,8 +1,9 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Product } from './product.schema';
 import { QueryDto } from './query.dto';
+import { log } from 'src/do_logger';
 
 @Injectable()
 export class ProductService {
@@ -16,14 +17,15 @@ export class ProductService {
             const createdProduct = new this.productModel(createProductDto);
             return await createdProduct.save();
         } catch (error) {
-
-            throw new InternalServerErrorException(error);
+            log(`Error createing objects ${error}`, "ERROR")
+            throw new BadRequestException(error);
         }
 
     }
 
 
     async findAll(query: QueryDto, req: any): Promise<{ products: Product[], totalDocuments: number }> {
+
         const {
             filter = '{}',
             sort = '{}',
@@ -54,10 +56,11 @@ export class ProductService {
             const totalDocuments = await this.productModel
                 .countDocuments({ ...parsedFilter, location: req.user.location })
                 .exec();
-            console.log(products)
+
             return { products, totalDocuments };
         } catch (error) {
-            console.error('Error in findAll:', error);
+            log('Error in findAll Products:', error)
+
             throw new InternalServerErrorException(error);
         }
     }
@@ -66,7 +69,8 @@ export class ProductService {
         try {
             return await this.productModel.findById(id).exec();
         } catch (error) {
-            throw new InternalServerErrorException(error);
+            log(`Error finding products ${error}`, "ERROR")
+            throw new BadRequestException(error);
         }
     }
 
@@ -74,7 +78,8 @@ export class ProductService {
         try {
             return await this.productModel.findByIdAndUpdate(id, updateProductDto).exec();
         } catch (error) {
-            throw new InternalServerErrorException(error);
+            log(`Error updating products ${error}`, "ERROR")
+            throw new BadRequestException(error);
         }
     }
 
@@ -86,7 +91,8 @@ export class ProductService {
             product.quantity = newquantity;
             return await product.save();
         } catch (error) {
-            throw new InternalServerErrorException(error);
+            log(`Error increacing amount ${error}`, "ERROR")
+            throw new BadRequestException(error);
         }
     }
 
@@ -97,7 +103,8 @@ export class ProductService {
             product.quantity -= amount;
             return await product.save();
         } catch (error) {
-            throw new InternalServerErrorException(error);
+            log(`Error decreasing amount ${error}`, "ERROR")
+            throw new BadRequestException(error);
         }
     }
 
@@ -105,7 +112,8 @@ export class ProductService {
         try {
             return await this.productModel.findByIdAndDelete(id).exec();
         } catch (error) {
-            throw new InternalServerErrorException(error);
+            log(`Error removing product ${error}`, "ERROR")
+            throw new BadRequestException(error);
         }
     }
 }

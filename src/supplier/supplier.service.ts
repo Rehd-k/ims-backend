@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Supplier } from './supplier.schema';
 import { QueryDto } from 'src/product/query.dto';
+import { log } from 'src/do_logger';
 
 @Injectable()
 export class SupplierService {
@@ -12,10 +13,16 @@ export class SupplierService {
     ) { }
 
     async createSupplier(data: any, req): Promise<any> {
-        data.location = req.user.location
-        data.initiator = req.user.username
-        const supplier = new this.supplierModel(data);
-        return supplier.save();
+        try {
+            data.location = req.user.location
+            data.initiator = req.user.username
+            const supplier = new this.supplierModel(data);
+            return supplier.save();
+        } catch (error) {
+            log(`Error creating supplier ${error}`, "ERROR")
+            throw new BadRequestException(error);
+        }
+
     }
 
     async getAllSuppliers(query: QueryDto, req: any): Promise<any> {
@@ -36,21 +43,34 @@ export class SupplierService {
                 .select(select)
                 .exec()
         } catch (error) {
-            throw new InternalServerErrorException(error);
+            log(`Error getting all supplier ${error}`, "ERROR")
+            throw new BadRequestException(error);
         }
     }
 
     async addOrder(supplierId: Types.ObjectId, orderId: Types.ObjectId): Promise<any> {
-        const supplier = await this.supplierModel.findById(supplierId);
-        if (!supplier) {
-            throw new BadRequestException('Supplier not found');
-        }
-        supplier.orders.push(orderId);
+        try {
+            const supplier = await this.supplierModel.findById(supplierId);
+            if (!supplier) {
+                throw new BadRequestException('Supplier not found');
+            }
+            supplier.orders.push(orderId);
 
-        await supplier.save()
+            await supplier.save()
+        } catch (error) {
+            log(`Error adding order to  supplier ${error}`, "ERROR")
+            throw new BadRequestException(error);
+        }
+
     }
 
     async getSupplierDetails(supplierId: string): Promise<any> {
-        return this.supplierModel.findById(supplierId).populate('orders.items.product').exec();
+        try {
+            return this.supplierModel.findById(supplierId).populate('orders.items.product').exec();
+        } catch (error) {
+            log(`Error supplier details ${error}`, "ERROR")
+            throw new BadRequestException(error);
+        }
+
     }
 }

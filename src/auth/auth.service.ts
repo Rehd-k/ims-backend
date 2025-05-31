@@ -17,7 +17,9 @@ export class AuthService {
         if (user && password === user.password) {
             const { password, ...result } = user.toObject();
             return result;
-        } else { throw new UnauthorizedException('Invalid password'); }
+        } else { 
+            
+            throw new UnauthorizedException('Invalid password'); }
 
     }
 
