@@ -7,6 +7,11 @@ function generateTransactionId(): string {
 }
 
 
+function generateBarCodeId(): string {
+    return Array.from({ length: 8 }, () => Math.floor(Math.random() * 10)).join('');
+}
+
+
 
 @Schema()
 class CartProduct {
@@ -94,6 +99,8 @@ export class Sale {
 
     @Prop({ default: generateTransactionId, index: 'text', set: (transactionId: string) => transactionId.toLowerCase(), })
     transactionId: string;
+    @Prop({ default: generateBarCodeId, index: 'text', set: (generateBarCodeId: string) => generateBarCodeId.toLowerCase(), })
+    barcodeId: string
 
     @Prop({ required: true })
     totalAmount: number;
@@ -121,13 +128,13 @@ export class Sale {
     @Prop()
     profit: number;
 
-    @Prop({ type: Types.ObjectId, ref: 'Bank', required: true })
+    @Prop({ type: Types.ObjectId, ref: 'Bank' })
     bank: Types.ObjectId;
 
     @Prop({ type: [ReturnsSchema] })
     returns: Returns[]
 
-    @Prop({ type: Types.ObjectId, ref: 'Customer', required: true })
+    @Prop({ type: Types.ObjectId, ref: 'Customer' })
     customer: Types.ObjectId;
 
     @Prop({ default: Date.now() })

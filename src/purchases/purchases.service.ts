@@ -13,6 +13,7 @@ export class PurchasesService {
     async create(createPurchaseDto: any, req: any): Promise<Purchase> {
         try {
             createPurchaseDto.location = req.user.location;
+            createPurchaseDto.initiator = req.user.username;
             const createdPurchase = new this.purchaseModel(createPurchaseDto);
             const order = await createdPurchase.save();
             await this.productService.increaseAmount(createdPurchase.productId, createdPurchase.quantity);

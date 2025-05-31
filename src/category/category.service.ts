@@ -10,6 +10,7 @@ export class CategoryService {
 
     async createCategory(category: any, req: any) {
         category.location = req.user.location;
+        category.initiator = req.user.username;
         return await this.categoryModel.create(category);
 
     }
