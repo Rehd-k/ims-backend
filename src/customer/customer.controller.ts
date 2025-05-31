@@ -1,4 +1,4 @@
-import { Controller, Query, UseGuards } from '@nestjs/common';
+import { Controller, Query, Req, UseGuards } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { Get, Post, Body, Param } from '@nestjs/common';
 import { QueryDto } from 'src/product/query.dto';
@@ -15,9 +15,10 @@ export class CustomerController {
     @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
     @Get()
     findAll(
-        @Query() query: QueryDto
+        @Query() query: QueryDto,
+        @Req() req: any
     ) {
-        return this.customerService.getAllCustomers(query);
+        return this.customerService.getAllCustomers(query, req);
     }
 
     @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
@@ -28,8 +29,8 @@ export class CustomerController {
 
     @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
     @Post()
-    create(@Body() createCustomerDto: any) {
-        return this.customerService.createCustomer(createCustomerDto);
+    create(@Body() createCustomerDto: any, @Req() req: any) {
+        return this.customerService.createCustomer(createCustomerDto, req);
     }
 
     @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)

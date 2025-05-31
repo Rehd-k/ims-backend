@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { LocationService } from './location.service';
 import { Role } from 'src/helpers/enums';
 import { Roles } from 'src/helpers/role/roles.decorator';
@@ -35,7 +35,7 @@ export class LocationController {
 
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(Role.God, Role.Admin)
-    @Put(':id')
+    @Patch(':id')
     async updateStoreById(@Param('id') storeId: string, @Body() updateDto: any) {
         return this.locationService.update(storeId, updateDto);
     }

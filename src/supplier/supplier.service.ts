@@ -13,6 +13,7 @@ export class SupplierService {
 
     async createSupplier(data: any, req): Promise<any> {
         data.location = req.user.location
+        data.initiator = req.user.username
         const supplier = new this.supplierModel(data);
         return supplier.save();
     }

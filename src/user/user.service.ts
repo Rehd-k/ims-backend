@@ -9,7 +9,7 @@ import { QueryDto } from 'src/product/query.dto';
 export class UserService {
     constructor(@InjectModel(User.name) private readonly userModel: Model<User>) { }
 
-    async create(user: Partial<User>) {
+    async create(user: any) {
         try {
             return await this.userModel.create(user);
         } catch (error) {
@@ -26,23 +26,23 @@ export class UserService {
         return this.userModel.findOne({ username, location });
     }
 
-    async getAllUsers(query: QueryDto) {
-            const {
-                filter = '{}',
-                sort = '{}',
-                limit = 10,
-                skip = 0,
-                select = '',
-            } = query;
-            const parsedFilter = JSON.parse(filter);
-            const parsedSort = JSON.parse(sort);
+    async getAllUsers(query: QueryDto, req) {
+        const {
+            filter = '{}',
+            sort = '{}',
+            limit = 10,
+            skip = 0,
+            select = '',
+        } = query;
+        const parsedFilter = JSON.parse(filter);
+        const parsedSort = JSON.parse(sort);
         return await this.userModel.find(parsedFilter)
-        .sort(parsedSort)
-        .skip(Number(skip))
-        .limit(Number(limit))
-        .select(select)
-        .populate('location') 
-        .exec()
+            .sort(parsedSort)
+            .skip(Number(skip))
+            .limit(Number(limit))
+            .select(select)
+            .populate('location')
+            .exec()
     }
 
     async getOneById(id: string) {

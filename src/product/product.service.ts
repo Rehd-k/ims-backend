@@ -12,6 +12,7 @@ export class ProductService {
         try {
             createProductDto.location = req.user.location;
             createProductDto.title = createProductDto.title.toLowerCase();
+            createProductDto.initiator = req.user.username;
             const createdProduct = new this.productModel(createProductDto);
             return await createdProduct.save();
         } catch (error) {
@@ -32,6 +33,12 @@ export class ProductService {
         } = query;
         const parsedFilter = JSON.parse(filter);
         const parsedSort = JSON.parse(sort);
+        // If the filter contains a 'barcode' key, set skip to 0
+        if (parsedFilter && typeof parsedFilter === 'object' && 'barcode' in parsedFilter) {
+            query.skip = 0;
+            if (parsedFilter.barcode['$regex'])
+                parsedFilter.barcode['$regex'] = parsedFilter.barcode['$regex'].toUpperCase();
+        }
         try {
 
 
@@ -47,9 +54,10 @@ export class ProductService {
             const totalDocuments = await this.productModel
                 .countDocuments({ ...parsedFilter, location: req.user.location })
                 .exec();
-
+            console.log(products)
             return { products, totalDocuments };
         } catch (error) {
+            console.error('Error in findAll:', error);
             throw new InternalServerErrorException(error);
         }
     }

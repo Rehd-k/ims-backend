@@ -59,6 +59,7 @@ export class SalesService {
             await this.activityService.logAction(`${req.user.userId}`, req.user.username, 'Made Sales', `Transaction Id ${data.transactionId}`)
             return data
         } catch (error) {
+            console.log(error);
             throw new InternalServerErrorException(error)
         }
 
@@ -246,6 +247,7 @@ export class SalesService {
         const parsedFilter = JSON.parse(filter);
         const parsedSort = JSON.parse(sort);
 
+
         try {
             const startDate = new Date(query.startDate);
             startDate.setHours(0, 0, 0, 0); // Start of the startDate
@@ -262,6 +264,13 @@ export class SalesService {
             if (req.user.role === 'staff') {
                 parsedFilter.handler = req.user.username
             }
+
+            if (parsedFilter && typeof parsedFilter === 'object' && 'barcodeId' in parsedFilter) {
+                query.skip = 0;
+                delete parsedFilter.transactionDate
+            }
+
+            console.log(parsedFilter)
             const totals = await this.saleModel.aggregate([
                 {
                     $match: { ...parsedFilter, location: req.user.location }
@@ -298,6 +307,7 @@ export class SalesService {
                 .skip(Number(skip))
                 .limit(Number(limit))
                 .select(select)
+                .populate('customer bank')
                 .exec();
             const handlersSet = new Set<string>();
             sales.forEach(sale => handlersSet.add(sale.handler));
@@ -309,6 +319,7 @@ export class SalesService {
 
             return { sales, handlers, totalDocuments, summary };
         } catch (error) {
+            console.log(error)
             throw new InternalServerErrorException(error)
         }
     }
@@ -451,8 +462,6 @@ export class SalesService {
         ]);
         return sales;
     }
-
-
 
     async getSalesData(query: QueryDto): Promise<any> {
     };

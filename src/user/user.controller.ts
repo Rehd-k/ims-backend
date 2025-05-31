@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/helpers/role/roles.guard';
 import { UserService } from './user.service';
@@ -15,9 +15,10 @@ export class UserController {
     @Roles(Role.God, Role.Admin, Role.Manager)
     @Get()
     async getAllUsers(
-        @Query() query: QueryDto
+        @Query() query: QueryDto,
+        @Req() req: any
     ) {
-        return await this.userService.getAllUsers(query);
+        return await this.userService.getAllUsers(query, req);
     }
 
     @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)

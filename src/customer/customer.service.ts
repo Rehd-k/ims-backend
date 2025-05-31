@@ -12,25 +12,26 @@ export class CustomerService {
 
     ) { }
 
-    async createCustomer(data: any): Promise<any> {
+    async createCustomer(data: any, req: any): Promise<any> {
         try {
             const customer = new this.customerModel(data);
-            
+
             if (customer.email) {
                 const existing = await this.customerModel.findOne({ email: customer.email })
                 if (existing) {
                     throw Error('Email Already Exists')
                 }
             }
+            customer.initiator = req.user.username;
             return customer.save();
         } catch (error) {
-            
+
             throw new BadRequestException(error);
         }
 
     }
 
-    async getAllCustomers(query: QueryDto): Promise<any> {
+    async getAllCustomers(query: QueryDto, req): Promise<any> {
         const {
             filter = '{}',
             sort = '{}',
@@ -58,13 +59,13 @@ export class CustomerService {
                 .select(select)
                 .exec()
         } catch (error) {
-            
+
             throw new BadRequestException(error);
         }
     }
 
     async addOrder(customerId: Types.ObjectId, orderId: Types.ObjectId, total_spent: number): Promise<any> {
-       
+
         const customer = await this.customerModel.findById(customerId);
         if (!customer) {
             throw new BadRequestException('Customer not found');
