@@ -11,7 +11,7 @@ export class MongoBackupService implements OnModuleInit {
   private mongoUri = 'mongodb://localhost:27017/ims'; // Update this
 
   async onModuleInit() {
-    await mongoose.connect(this.mongoUri);
+    // await mongoose.connect(this.mongoUri);
     this.scheduleBackup();
   }
 

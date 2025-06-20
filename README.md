@@ -114,7 +114,7 @@ ngrok http --url=precious-smooth-dove.ngrok-free.app 4000
 npx javascript-obfuscator dist --output dist-obf --compact true --control-flow-flattening true --control-flow-flattening-threshold 0.3 --string-array true --string-array-threshold 0.5 --target node
 
 
-pkg . --output ser4553jgfcm8975tce66t3468j.exe
+pkg . --output server.exe
 
 C:\nssm\nssm.exe install YourServiceName
 
