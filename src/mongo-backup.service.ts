@@ -8,10 +8,10 @@ import * as cron from 'node-cron';
 
 @Injectable()
 export class MongoBackupService implements OnModuleInit {
-  private mongoUri = 'mongodb://localhost:27017/ims'; // Update this
+  private mongoUri = 'mongodb://127.0.0.1:27017/ims'; // Update this
 
   async onModuleInit() {
-    // await mongoose.connect(this.mongoUri);
+    await mongoose.connect(this.mongoUri);
     this.scheduleBackup();
   }
 
