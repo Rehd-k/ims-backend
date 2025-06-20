@@ -17,9 +17,9 @@ export class MongoBackupService implements OnModuleInit {
 
   scheduleBackup() {
     // Every 4 hours: 0 */4 * * *
-    // cron.schedule('0 */4 * * *', () => {
-    //   this.performBackup().catch(console.error);
-    // });
+    cron.schedule('0 */4 * * *', () => {
+      this.performBackup().catch(console.error);
+    });
 
     // Run once on startup
     this.performBackup().catch(console.error);
