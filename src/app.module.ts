@@ -26,6 +26,7 @@ import { SettingsModule } from './settings/settings.module';
 import { ChargesModule } from './charges/charges.module';
 import * as fs from 'fs';
 import { log } from './do_logger';
+import { MongoBackupService } from './mongo-backup.service';
 
 
 // Ensure logs directory exists
@@ -64,6 +65,7 @@ if (!fs.existsSync('./logs')) {
     LoggerModule.forRoot({
       pinoHttp: {
         level: 'info',
+        timestamp: () => `,"time":"${new Date()}"`,
         stream: fs.createWriteStream('./logs/app.log', { flags: 'a' }), // Log only to file
       },
     }),
@@ -76,6 +78,6 @@ if (!fs.existsSync('./logs')) {
     ChargesModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, MongoBackupService],
 })
 export class AppModule { }

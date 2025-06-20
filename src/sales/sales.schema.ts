@@ -72,7 +72,7 @@ class Returns {
     )
     handler: string;
 
-    @Prop({ default: Date.now })
+    @Prop({ default: new Date() })
     returnedAt: Date;
 }
 const ReturnsSchema = SchemaFactory.createForClass(Returns);
@@ -137,7 +137,7 @@ export class Sale {
     @Prop({ type: Types.ObjectId, ref: 'Customer' })
     customer: Types.ObjectId;
 
-    @Prop({ default: Date.now() })
+    @Prop({ required: true })
     transactionDate: Date;
 
     @Prop({ required: true })

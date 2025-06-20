@@ -50,7 +50,7 @@ export class Purchase {
     supplier: Types.ObjectId;
 
     @Prop({
-        default: Date.now()
+        default: new Date
     })
     expiryDate: Date;
 
@@ -75,7 +75,7 @@ export class Purchase {
     @Prop({
         type: [
             {
-                date: { type: Date, required: true, default: Date.now },
+                date: { type: Date, required: true, default: new Date() },
                 amountPaid: { type: { transfer: Number, cash: Number, card: Number }, required: true },
             },
         ]

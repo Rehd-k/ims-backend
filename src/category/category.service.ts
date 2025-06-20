@@ -34,9 +34,11 @@ export class CategoryService {
             const parsedFilter = JSON.parse(filter);
             const parsedSort = JSON.parse(sort);
             return await this.categoryModel.find({ ...parsedFilter, location: req.user.location })
-                .sort(parsedSort)
+                .sort({
+                    title: 1
+                })
                 .skip(Number(skip))
-                .limit(Number(limit))
+                // .limit(Number(limit))
                 .select(select)
                 .exec()
         } catch (error) {

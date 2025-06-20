@@ -116,5 +116,8 @@ npx javascript-obfuscator dist --output dist-obf --compact true --control-flow-f
 
 pkg . --output ser4553jgfcm8975tce66t3468j.exe
 
+C:\nssm\nssm.exe install YourServiceName
+
+
 
 https://chatgpt.com/share/6824ff49-c598-8011-9c9e-0b4e41182c6c

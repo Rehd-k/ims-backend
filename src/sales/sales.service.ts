@@ -48,6 +48,7 @@ export class SalesService {
             sellData.handler = req.user.username;
             sellData.totalAmount = sellData.cash + sellData.card + sellData.transfer
             sellData.location = req.user.location
+            sellData.transactionDate = new Date(sellData.transactionDate)
             const data = await this.saleModel.create(sellData);
 
             for (const element of data.products) {
@@ -59,7 +60,7 @@ export class SalesService {
                 await this.customerService.addOrder(sellData.customer, data._id, data.totalAmount)
             }
             await this.activityService.logAction(`${req.user.userId}`, req.user.username, 'Made Sales', `Transaction Id ${data.transactionId}`)
-            return data
+            return data.populate('customer bank')
         } catch (error) {
             log(error, "ERROR")
             throw new InternalServerErrorException(error)
@@ -274,6 +275,14 @@ export class SalesService {
                 delete parsedFilter.transactionDate
             }
 
+            if (parsedFilter.handler === '') {
+                delete parsedFilter.handler
+            }
+
+
+            if (parsedFilter.paymentMethod === '') {
+                delete parsedFilter.paymentMethod
+            }
 
             const totals = await this.saleModel.aggregate([
                 {
@@ -313,13 +322,20 @@ export class SalesService {
                 .select(select)
                 .populate('customer bank')
                 .exec();
-            const handlersSet = new Set<string>();
-            sales.forEach(sale => handlersSet.add(sale.handler));
-            const handlers = Array.from(handlersSet);
+
 
             const totalDocuments = await this.saleModel
                 .countDocuments({ ...parsedFilter, location: req.user.location }); // Count total documents matching the filter
 
+
+            const forHandlers = await this.saleModel
+                .find({ transactionDate: { $gte: startDate, $lte: endDate }, location: req.user.location });
+
+
+            const handlersSet = new Set<string>();
+            forHandlers.forEach(sale => handlersSet.add(sale.handler));
+            const handlers = Array.from(handlersSet);
+     
 
             return { sales, handlers, totalDocuments, summary };
         } catch (error) {
@@ -330,7 +346,7 @@ export class SalesService {
 
     async findOne(id: string): Promise<Sale> {
         try {
-            return await this.saleModel.findById(id).exec();
+            return await this.saleModel.findById(id).populate('customer bank').exec();
         } catch (error) {
             log(`Error finding one ${error}`, "ERROR")
             throw new BadRequestException(error);

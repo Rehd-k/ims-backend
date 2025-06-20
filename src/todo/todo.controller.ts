@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query, UseGuards, Put } from '@nestjs/common';
 import { TodoService } from './todo.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
@@ -35,7 +35,7 @@ export class TodoController {
   }
 
   @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateTodoDto: UpdateTodoDto, @Req() req: any) {
     return this.todoService.update(id, updateTodoDto, req);
   }

@@ -22,9 +22,6 @@ export class Bank {
         trim: true
     })
     initiator: string;
-
-    @Prop({ type: Types.ObjectId, ref: 'Location', required: true })
-    location: Types.ObjectId;
 }
 
 export const BankSchema = SchemaFactory.createForClass(Bank);

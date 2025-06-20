@@ -221,11 +221,16 @@ export class PurchasesService {
 
     async update(id: string, updatePurchaseDto: any) {
         try {
+            Object.entries(updatePurchaseDto).forEach(([key, value]) => {
+                log(`${key}: ${JSON.stringify(value)}`);
+            });
             const product = await this.productService.findOne(updatePurchaseDto.productId);
-            product.quantity = product.quantity - Number(updatePurchaseDto.damagedGoods.quantity);
+            product.quantity = product.quantity - Number(updatePurchaseDto.quantity);
             const purchace = await this.purchaseModel.findById(id);
+            purchace.quantity = purchace.quantity - Number(updatePurchaseDto.quantity);
             delete updatePurchaseDto.productId;
-            purchace.damagedGoods = updatePurchaseDto.damagedGoods;
+            delete updatePurchaseDto._id;
+            purchace.damagedGoods.push(updatePurchaseDto) ;
 
             await product.save();
             await purchace.save();
