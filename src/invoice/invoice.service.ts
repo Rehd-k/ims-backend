@@ -42,7 +42,6 @@ export class InvoiceService {
 
     const parsedFilter = JSON.parse(filter);
     const parsedSort = JSON.parse(sort);
-
     try {
       if (startDate && endDate && selectedDateField) {
         const start = new Date(startDate);
@@ -73,6 +72,52 @@ export class InvoiceService {
         .populate('bank customer')
         .exec();
       return result;
+    } catch (error) {
+      log(`Error fetching invoices: ${error.message}`, "ERROR")
+      throw new Error(`Error fetching invoices: ${error.message}`);
+    }
+  }
+
+  async findAllCustomersInvoices(query: QueryDto, req: any): Promise<{ result: Invoice[], totalDocuments: number }> {
+    const {
+      filter = '{}',
+      sort = '{}',
+      skip = 0,
+      select = '',
+      limit = 10,
+      startDate,
+      endDate,
+      selectedDateField
+    } = query;
+
+    const parsedFilter = JSON.parse(filter);
+    const parsedSort = JSON.parse(sort);
+
+    try {
+      if (startDate && endDate && selectedDateField) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0); // Start of day
+
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // End of day
+
+        parsedFilter[selectedDateField] = { $gte: start, $lte: end };
+      }
+
+      const result = await this.invoiceModel.find({ ...parsedFilter, location: req.user.location })
+        .sort(parsedSort)
+        .skip(Number(skip))
+        .limit(Number(limit))
+        .populate('bank customer')
+        .select(select)
+        .exec();
+
+      const totalDocuments = await this.invoiceModel
+        .countDocuments({ ...parsedFilter, location: req.user.location })
+        .exec();
+
+      return { result, totalDocuments };
+
     } catch (error) {
       log(`Error fetching invoices: ${error.message}`, "ERROR")
       throw new Error(`Error fetching invoices: ${error.message}`);

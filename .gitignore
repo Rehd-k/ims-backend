@@ -60,5 +60,6 @@ typings/
 .env.test
 
 # NestJS build output
+backups/
 dist/
 node_modules

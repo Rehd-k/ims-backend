@@ -72,6 +72,7 @@ export class SalesService {
 
         async function handle_break_down(element: any, purchaseService: PurchasesService) {
             const purchase = await purchaseService.findFirstUnsoldPurchase(element._id, req);
+
             const sold = purchase.sold.reduce((sum, item) => sum + (item.amount || 0), 0);
             const good_avalable_for_sale = purchase.quantity - sold;
             if (good_avalable_for_sale >= qunt_to_sell) {
@@ -335,7 +336,7 @@ export class SalesService {
             const handlersSet = new Set<string>();
             forHandlers.forEach(sale => handlersSet.add(sale.handler));
             const handlers = Array.from(handlersSet);
-     
+
 
             return { sales, handlers, totalDocuments, summary };
         } catch (error) {

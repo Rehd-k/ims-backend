@@ -29,6 +29,13 @@ export class InvoiceController {
   }
 
   @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
+  @Get('customer')
+  findAllForCustomer(
+    @Query() query: QueryDto, @Req() req: any
+  ) {
+    return this.invoiceService.findAllCustomersInvoices(query, req);
+  }
+  @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
   @Get('/send-whatsapp/:id')
   sendMessage(
     @Param('id') id: string
