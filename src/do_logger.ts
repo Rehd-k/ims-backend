@@ -24,5 +24,5 @@ function formatTime(date: Date): string {
 export const log = (msg: string, level: 'INFO' | 'WARN' | 'ERROR' = 'INFO') => {
     const timestamp = formatTime(new Date());
     const line = `[${timestamp}] [${level}] ${msg}\n`;
-    stream.write(line);
+    process.env.NODE_ENV === 'production' ? console.log(line) : stream.write(line);
 };

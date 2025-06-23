@@ -39,7 +39,7 @@ if (!fs.existsSync('./logs')) {
     ConfigModule.forRoot(),
     MongooseModule.forRootAsync({
       useFactory: async () => {
-        const uri = 'mongodb://127.0.0.1:27017/ims';
+        const uri = process.env.NODE_ENV === 'production' ? process.env.DATABASE_PROD : process.env.DATABASE_PROD;
         return {
           uri,
           connectionFactory: (connection) => {
@@ -63,11 +63,18 @@ if (!fs.existsSync('./logs')) {
     LocationModule,
     PurchasesModule,
     LoggerModule.forRoot({
-      pinoHttp: {
-        level: 'info',
-        timestamp: () => `,"time":"${new Date()}"`,
-        stream: fs.createWriteStream('./logs/app.log', { flags: 'a' }), // Log only to file
-      },
+      pinoHttp: process.env.NODE_ENV === 'production'
+        ? {
+          level: 'info',
+          timestamp: () => `,"time":"${new Date()}"`,
+          stream: fs.createWriteStream('./logs/app.log', { flags: 'a' }),
+        }
+        : {
+          level: 'debug',
+          transport: {
+            target: 'pino-pretty',
+          },
+        },
     }),
     CategoryModule,
     CustomerModule,
