@@ -35,6 +35,16 @@ export class InvoiceController {
   ) {
     return this.invoiceService.findAllCustomersInvoices(query, req);
   }
+
+  @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
+  @Get('customer/dashboard')
+  findForCustomerDashbaord(
+    @Query() query: QueryDto, @Req() req: any
+  ) {
+    return this.invoiceService.getCustomerDashBoardInfo(query, req);
+  }
+
+
   @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
   @Get('/send-whatsapp/:id')
   sendMessage(

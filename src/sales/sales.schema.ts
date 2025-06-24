@@ -72,10 +72,18 @@ class Returns {
     )
     handler: string;
 
-    @Prop({ default: new Date() })
+    @Prop({
+        default: () => {
+            // Create a date in GMT+1 (Central European Time)
+            const now = new Date();
+            // Get UTC time and add 1 hour (3600000 ms)
+            return new Date(now.getTime() + 60 * 60 * 1000);
+        }
+    })
     returnedAt: Date;
 }
 const ReturnsSchema = SchemaFactory.createForClass(Returns);
+
 
 @Schema()
 class Charges {
@@ -91,8 +99,17 @@ class Charges {
 const ChargesSchema = SchemaFactory.createForClass(Charges);
 
 
-@Schema({ timestamps: true })
 
+@Schema({
+    timestamps: {
+        currentTime: () => {
+            // Create a date in GMT+1 (Central European Time)
+            const now = new Date();
+            // Get UTC time and add 1 hour (3600000 ms)
+            return new Date(now.getTime() + 60 * 60 * 1000);
+        }
+    }
+})
 export class Sale {
     @Prop({ type: [CartProductSchema] })
     products: CartProduct[];
@@ -137,7 +154,14 @@ export class Sale {
     @Prop({ type: Types.ObjectId, ref: 'Customer' })
     customer: Types.ObjectId;
 
-    @Prop({ required: true })
+    @Prop({
+        required: true,
+        set: (value: Date | string) => {
+            const date = new Date(value);
+            // Convert to GMT+1 by adding 1 hour (3600000 ms)
+            return new Date(date.getTime() + 60 * 60 * 1000);
+        }
+    })
     transactionDate: Date;
 
     @Prop({ required: true })

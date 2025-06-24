@@ -10,10 +10,10 @@ import * as cron from 'node-cron';
 export class MongoBackupService {
   private mongoUri = 'mongodb://127.0.0.1:27017/ims'; // Update this
 
-  // async onModuleInit() {
-  //   await mongoose.connect(this.mongoUri);
-  //   this.scheduleBackup();
-  // }
+  async onModuleInit() {
+    await mongoose.connect(this.mongoUri);
+    this.scheduleBackup();
+  }
 
   scheduleBackup() {
     // Every 4 hours: 0 */4 * * *

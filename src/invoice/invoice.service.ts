@@ -116,12 +116,81 @@ export class InvoiceService {
         .countDocuments({ ...parsedFilter, location: req.user.location })
         .exec();
 
+
       return { result, totalDocuments };
 
     } catch (error) {
       log(`Error fetching invoices: ${error.message}`, "ERROR")
       throw new Error(`Error fetching invoices: ${error.message}`);
     }
+  }
+
+  async getCustomerDashBoardInfo(query: QueryDto, req: any) {
+
+    const {
+      filter = '{}'
+    } = query;
+
+    const parsedFilter = JSON.parse(filter);
+    // Define base filter
+    const baseMatch = {
+      customer: parsedFilter.customer,
+      location: req.user.location
+    };
+
+    // Get today and tomorrow for dueToday filter
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    // Define aggregation filters
+    const aggregationFilters = {
+      all: { ...baseMatch },
+      paid: { ...baseMatch, status: 'paid' },
+      pending: { ...baseMatch, status: 'pending' },
+      dueToday: { ...baseMatch, dueDate: { $gte: today, $lt: tomorrow } }
+    };
+
+    // Helper to run aggregation
+    const runAggregation = async (match) => {
+      const result = await this.invoiceModel.aggregate([
+        { $match: match },
+        { $group: { _id: null, total: { $sum: "$totalAmount" } } }
+      ]);
+      return result[0]?.total || 0;
+    };
+
+    // Run all aggregations in parallel
+    const [
+      totalAmountAllValue,
+      totalAmountPaidValue,
+      totalAmountPendingValue,
+      totalAmountDueTodayValue
+    ] = await Promise.all([
+      runAggregation(aggregationFilters.all),
+      runAggregation(aggregationFilters.paid),
+      runAggregation(aggregationFilters.pending),
+      runAggregation(aggregationFilters.dueToday)
+    ]);
+
+
+    console.log({
+
+      totalAmountAllValue,
+      totalAmountPaidValue,
+      totalAmountPendingValue,
+      totalAmountDueTodayValue
+    })
+
+    return {
+
+      totalAmountAllValue,
+      totalAmountPaidValue,
+      totalAmountPendingValue,
+      totalAmountDueTodayValue
+    };
+
   }
 
   findOne(filter: string) {

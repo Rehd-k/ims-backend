@@ -39,7 +39,7 @@ if (!fs.existsSync('./logs')) {
     ConfigModule.forRoot(),
     MongooseModule.forRootAsync({
       useFactory: async () => {
-        const uri = process.env.NODE_ENV === 'production' ? process.env.DATABASE_PROD : process.env.DATABASE_PROD;
+        const uri = process.env.NODE_ENV === 'production' ? process.env.DATABASE_PROD : process.env.DATABASE_DEV;
         return {
           uri,
           connectionFactory: (connection) => {
@@ -85,6 +85,6 @@ if (!fs.existsSync('./logs')) {
     ChargesModule
   ],
   controllers: [AppController],
-  providers: [AppService, MongoBackupService],
+  providers: [AppService],
 })
 export class AppModule { }

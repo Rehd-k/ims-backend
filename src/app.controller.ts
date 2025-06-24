@@ -4,7 +4,7 @@ import { MongoBackupService } from './mongo-backup.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService, private backUpService: MongoBackupService) { }
+  constructor(private readonly appService: AppService) { }
 
   @Get()
   getHello(): string {
@@ -12,8 +12,8 @@ export class AppController {
   }
 
 
-  @Get('/do-backup')
-  async doBackUp()  {
-   await this.backUpService.scheduleBackup();
-  }
+  // @Get('/do-backup')
+  // async doBackUp()  {
+  //  await this.backUpService.scheduleBackup();
+  // }
 }

@@ -25,17 +25,38 @@ class CartProduct {
 }
 const CartProductSchema = SchemaFactory.createForClass(CartProduct);
 
-@Schema({ timestamps: true })
+@Schema({
+    timestamps: {
+        currentTime: () => {
+            // Create a date in GMT+1 (Central European Time)
+            const now = new Date();
+            // Get UTC time and add 1 hour (3600000 ms)
+            return new Date(now.getTime() + 60 * 60 * 1000);
+        }
+    }
+})
 export class Invoice extends Document {
 
 
     @Prop({ type: Types.ObjectId, ref: 'Customer', required: true })
     customer: Types.ObjectId;
 
-    @Prop({ required: true, type: Date })
+    @Prop({
+        required: true, type: Date, set: (value: Date | string) => {
+            const date = new Date(value);
+            // Convert to GMT+1 by adding 1 hour (3600000 ms)
+            return new Date(date.getTime() + 60 * 60 * 1000);
+        }
+    })
     issuedDate: Date;
 
-    @Prop({ required: true, type: Date })
+    @Prop({
+        required: true, type: Date, set: (value: Date | string) => {
+            const date = new Date(value);
+            // Convert to GMT+1 by adding 1 hour (3600000 ms)
+            return new Date(date.getTime() + 60 * 60 * 1000);
+        }
+    })
     dueDate: Date;
 
     @Prop({ required: true, unique: true })

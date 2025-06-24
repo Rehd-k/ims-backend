@@ -14,6 +14,7 @@ export class BanksService {
         try {
             const createdBank = new this.bankModel(createBankDto);
             createdBank.initiator = req.user.username;
+            createdBank.location = req.user.location;
             return await createdBank.save();
         } catch (error) {
             log(`Error creating bank: ${error.message}`, "ERROR")
@@ -21,9 +22,9 @@ export class BanksService {
         }
     }
 
-    async findAll(): Promise<Bank[]> {
+    async findAll(req): Promise<Bank[]> {
         try {
-            return await this.bankModel.find().exec();
+            return await this.bankModel.find({location : req.user.location}).exec();
         } catch (error) {
             log(`Error finding banks: ${error.message}`, "ERROR")
             throw new Error(`Error finding banks: ${error.message}`);
@@ -64,7 +65,7 @@ export class BanksService {
             }
             return deletedBank;
         } catch (error) {
-             log(`Error deleting bank: ${error.message}`, "ERROR")
+            log(`Error deleting bank: ${error.message}`, "ERROR")
             throw new Error(`Error deleting bank: ${error.message}`);
         }
     }

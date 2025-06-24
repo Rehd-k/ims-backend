@@ -4,7 +4,16 @@ import { Types } from 'mongoose';
 
 export type PurchaseDocument = Purchase & Document;
 
-@Schema({ timestamps: true })
+@Schema({
+    timestamps: {
+        currentTime: () => {
+            // Create a date in GMT+1 (Central European Time)
+            const now = new Date();
+            // Get UTC time and add 1 hour (3600000 ms)
+            return new Date(now.getTime() + 60 * 60 * 1000);
+        }
+    }
+})
 export class Purchase {
 
     @Prop({ required: true, set: (title: string) => title.toLowerCase() })
@@ -25,7 +34,13 @@ export class Purchase {
     @Prop({ required: true })
     totalPayable: number;
 
-    @Prop({ required: true })
+    @Prop({
+        required: true, set: (value: Date | string) => {
+            const date = new Date(value);
+            // Convert to GMT+1 by adding 1 hour (3600000 ms)
+            return new Date(date.getTime() + 60 * 60 * 1000);
+        }
+    })
     purchaseDate: Date;
 
     @Prop({
@@ -50,7 +65,12 @@ export class Purchase {
     supplier: Types.ObjectId;
 
     @Prop({
-        default: new Date
+        default: new Date,
+        set: (value: Date | string) => {
+            const date = new Date(value);
+            // Convert to GMT+1 by adding 1 hour (3600000 ms)
+            return new Date(date.getTime() + 60 * 60 * 1000);
+        }
     })
     expiryDate: Date;
 
@@ -75,7 +95,18 @@ export class Purchase {
     @Prop({
         type: [
             {
-                date: { type: Date, required: true, default: new Date() },
+                date: {
+                    type: Date, required: true, default: () => {
+                        // Create a date in GMT+1 (Central European Time)
+                        const now = new Date();
+                        // Get UTC time and add 1 hour (3600000 ms)
+                        return new Date(now.getTime() + 60 * 60 * 1000);
+                    }, set: (value: Date | string) => {
+                        const date = new Date(value);
+                        // Convert to GMT+1 by adding 1 hour (3600000 ms)
+                        return new Date(date.getTime() + 60 * 60 * 1000);
+                    }
+                },
                 amountPaid: { type: { transfer: Number, cash: Number, card: Number }, required: true },
             },
         ]

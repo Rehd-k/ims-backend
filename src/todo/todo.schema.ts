@@ -3,7 +3,16 @@ import { Document, Types } from 'mongoose';
 
 export type TodoDocument = Todo & Document;
 
-@Schema({ timestamps: true })
+@Schema({
+    timestamps: {
+        currentTime: () => {
+            // Create a date in GMT+1 (Central European Time)
+            const now = new Date();
+            // Get UTC time and add 1 hour (3600000 ms)
+            return new Date(now.getTime() + 60 * 60 * 1000);
+        }
+    }
+})
 export class Todo extends Document {
     @Prop({ required: true })
     title: string;
@@ -23,6 +32,11 @@ export class Todo extends Document {
             const now = new Date();
             now.setHours(23, 59, 59, 999); // Set to the end of the day
             return now;
+        },
+        set: (value: Date | string) => {
+            const date = new Date(value);
+            // Convert to GMT+1 by adding 1 hour (3600000 ms)
+            return new Date(date.getTime() + 60 * 60 * 1000);
         }
     })
     maxDate: Date;
@@ -32,6 +46,7 @@ export class Todo extends Document {
 
     @Prop({ type: Types.ObjectId, ref: 'Location', required: true })
     location: Types.ObjectId;
+
 }
 
 export const TodoSchema = SchemaFactory.createForClass(Todo);

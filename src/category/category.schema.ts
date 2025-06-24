@@ -4,7 +4,14 @@ import { Document, Types } from 'mongoose';
 export type CategoryDocument = Category & Document;
 
 @Schema({
-    timestamps: true
+    timestamps: {
+        currentTime: () => {
+            // Create a date in GMT+1 (Central European Time)
+            const now = new Date();
+            // Get UTC time and add 1 hour (3600000 ms)
+            return new Date(now.getTime() + 60 * 60 * 1000);
+        }
+    }
 })
 export class Category extends Document {
 

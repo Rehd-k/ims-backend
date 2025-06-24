@@ -3,7 +3,16 @@ import { Document, Types } from 'mongoose';
 
 export type BankDocument = Bank & Document;
 
-@Schema({ timestamps: true })
+@Schema({
+    timestamps: {
+        currentTime: () => {
+            // Create a date in GMT+1 (Central European Time)
+            const now = new Date();
+            // Get UTC time and add 1 hour (3600000 ms)
+            return new Date(now.getTime() + 60 * 60 * 1000);
+        }
+    }
+})
 export class Bank {
     @Prop({ required: true })
     name: string;
@@ -16,6 +25,9 @@ export class Bank {
 
     @Prop({ default: 0 })
     balance: number;
+
+    @Prop()
+    location: string;
 
     @Prop({
         type: String,

@@ -14,8 +14,10 @@ export class BanksController {
 
     @Roles(Role.God, Role.Admin, Role.Manager, Role.Cashier, Role.Staff)
     @Get()
-    findAll() {
-        return this.banksService.findAll();
+    findAll(
+        @Req() req: any
+    ) {
+        return this.banksService.findAll(req);
     }
 
     @Roles(Role.God, Role.Admin, Role.Manager, Role.Cashier, Role.Staff)

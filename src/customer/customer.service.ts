@@ -24,6 +24,7 @@ export class CustomerService {
                 }
             }
             customer.initiator = req.user.username;
+            customer.location = req.user.location;
             return customer.save();
         } catch (error) {
             log(`Error create new   cusomter: ${error}`, "ERROR")
@@ -53,7 +54,7 @@ export class CustomerService {
         }
         try {
             return await this.customerModel
-                .find(parsedFilter)
+                .find({ ...parsedFilter, location: req.user.location })
                 .sort(parsedSort)
                 .limit(10)
                 .skip(Number(skip))

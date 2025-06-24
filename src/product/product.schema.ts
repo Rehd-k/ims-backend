@@ -8,7 +8,16 @@ function generateTransactionId(): string {
     return Math.random().toString(36).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
 }
 
-@Schema({ timestamps: true })
+@Schema({
+    timestamps: {
+        currentTime: () => {
+            // Create a date in GMT+1 (Central European Time)
+            const now = new Date();
+            // Get UTC time and add 1 hour (3600000 ms)
+            return new Date(now.getTime() + 60 * 60 * 1000);
+        }
+    }
+})
 export class Product extends Document {
     @Prop({ required: true, trim: true, set: (title: string) => title.toLowerCase() })
     title: string;
@@ -43,7 +52,13 @@ export class Product extends Document {
     @Prop({ trim: true, set: (title: string) => title.toLowerCase() })
     supplier: string;
 
-    @Prop()
+    @Prop({
+        set: (value: Date | string) => {
+            const date = new Date(value);
+            // Convert to GMT+1 by adding 1 hour (3600000 ms)
+            return new Date(date.getTime() + 60 * 60 * 1000);
+        }
+    })
     expiryDate: Date;
 
     @Prop({ min: 0, default: 0 })
