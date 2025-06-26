@@ -167,7 +167,7 @@ export class PurchasesService {
             startDate.setHours(0, 0, 0, 0); // Start of the startDate
 
             const endDate = new Date(query.endDate);
-            endDate.setHours(23, 59, 59, 999);
+            endDate.setHours(24, 59, 59, 999);
             keys.forEach(key => {
                 if (key == 'createdAt') {
                     parsedFilter[key] = { $gte: startDate, $lte: endDate }

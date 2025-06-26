@@ -15,14 +15,26 @@ export class Customer extends Document {
     @Prop({ required: true })
     name: string;
 
-    @Prop()
+    @Prop({default : ''})
     email: string;
 
     @Prop({ required: true, unique: true })
     phone_number: string;
 
-    @Prop()
+    @Prop({default : ''})
     address: string;
+
+    @Prop({default : ''})
+    city: string;
+
+    @Prop({default : ''})
+    state: string;
+
+    @Prop({default : ''})
+    zipCode: string;
+
+    @Prop({default : ''})
+    country: string;
 
     @Prop({
         default: 0
@@ -45,7 +57,7 @@ export class Customer extends Document {
     @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId }], ref: 'Sale' })
     returns: Types.ObjectId[];
 
-    @Prop()
+    @Prop({default : ''})
     location: string;
 
     @Prop({ required: true })

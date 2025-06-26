@@ -30,7 +30,7 @@ export class Todo extends Document {
         type: Date,
         default: () => {
             const now = new Date();
-            now.setHours(23, 59, 59, 999); // Set to the end of the day
+            now.setHours(24, 59, 59, 999); // Set to the end of the day
             return now;
         },
         set: (value: Date | string) => {

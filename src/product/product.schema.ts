@@ -46,6 +46,12 @@ export class Product extends Document {
     @Prop({ trim: true })
     description: string;
 
+    @Prop({ default: 'unit', enum: ['unit', 'carton'] })
+    type: String;
+
+    @Prop()
+    cartonAmount: number
+
     @Prop({ trim: true, set: (title: string) => title.toLowerCase() })
     brand: string;
 

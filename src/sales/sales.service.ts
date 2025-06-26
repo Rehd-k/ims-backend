@@ -26,6 +26,7 @@ export class SalesService {
         let qunt_to_sell = 0;
         let profit = 0;
         try {
+  
             for (const element of sellData.products) {
 
                 qunt_to_sell = element.quantity
@@ -115,7 +116,7 @@ export class SalesService {
         switch (parsedFilter.sorter) {
             case "Today":
                 startDate = new Date(now.setHours(0, 0, 0, 0));
-                endDate = new Date(now.setHours(23, 59, 59, 999));
+                endDate = new Date(now.setHours(24, 59, 59, 999));
                 groupBy = {
                     for: {
                         $add: [
@@ -141,7 +142,7 @@ export class SalesService {
                 startDate.setHours(0, 0, 0, 0);
 
                 endDate = new Date();
-                endDate.setHours(23, 59, 59, 999);
+                endDate.setHours(24, 59, 59, 999);
 
                 groupBy = {
                     for: {
@@ -259,7 +260,7 @@ export class SalesService {
             startDate.setHours(0, 0, 0, 0); // Start of the startDate
 
             const endDate = new Date(query.endDate);
-            endDate.setHours(23, 59, 59, 999); // End of the endDate 
+            endDate.setHours(24, 59, 59, 999); // End of the endDate 
 
             parsedFilter.transactionDate = { $gte: startDate, $lte: endDate };
 
@@ -460,7 +461,7 @@ export class SalesService {
         }
         if (!endDate) {
             endDate = new Date();
-            endDate.setHours(23, 59, 59, 999); // End of today
+            endDate.setHours(24, 59, 59, 999); // End of today
         }
         const sales = await this.saleModel.aggregate([
             { $unwind: "$products" },

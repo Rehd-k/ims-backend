@@ -69,7 +69,7 @@ export class ExpensesService {
             // start.setHours(0, 0, 0, 0); 
 
             // const end = new Date(endDate);
-            // end.setHours(23, 59, 59, 999);
+            // end.setHours(24, 59, 59, 999);
 
             // parsedFilter.createdAt = { $gte: start, $lte: end };
 
@@ -103,7 +103,7 @@ export class ExpensesService {
             start.setHours(0, 0, 0, 0); // Start of the startDate
 
             const end = new Date(endDate);
-            end.setHours(23, 59, 59, 999);
+            end.setHours(24, 59, 59, 999);
             const result = await this.expenseModel.aggregate([
                 { $match: { createdAt: { $gte: start, $lte: end }, ...parsedFilter, location: req.user.location } },
                 { $group: { _id: null, total: { $sum: '$amount' } } },

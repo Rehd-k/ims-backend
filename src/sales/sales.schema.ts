@@ -164,6 +164,12 @@ export class Sale {
     })
     transactionDate: Date;
 
+    @Prop({ default: false })
+    partPayment: boolean
+
+    @Prop({ default: '' })
+    for: string
+
     @Prop({ required: true })
     location: string;
 

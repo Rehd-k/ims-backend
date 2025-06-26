@@ -17,13 +17,15 @@ class CartProduct {
     @Prop()
     quantity: number;
 
+    @Prop({ default: 0 })
+    quantity_paid: number;
+
     @Prop()
     price: number;
 
     @Prop()
     total: number;
 }
-const CartProductSchema = SchemaFactory.createForClass(CartProduct);
 
 @Schema({
     timestamps: {
@@ -94,7 +96,7 @@ export class Invoice extends Document {
     note: string;
 
     @Prop()
-    amountPaid: string;
+    amountPaid: number;
 
     @Prop({ required: true, type: String })
     initiator: string;

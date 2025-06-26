@@ -48,10 +48,11 @@ export class InvoiceService {
         start.setHours(0, 0, 0, 0); // Start of day
 
         const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999); // End of day
+        end.setHours(24, 59, 59, 999); // End of day
 
         parsedFilter[selectedDateField] = { $gte: start, $lte: end };
       }
+
 
       // Handle customer search
       if (parsedFilter.customer) {
@@ -63,6 +64,8 @@ export class InvoiceService {
           { 'customer.phone_number': { $regex: customerQuery['$regex'], $options: 'i' } }
         ];
       }
+
+            console.log(parsedFilter)
 
       const result = await this.invoiceModel.find({ ...parsedFilter, location: req.user.location })
         .sort(parsedSort)
@@ -99,7 +102,7 @@ export class InvoiceService {
         start.setHours(0, 0, 0, 0); // Start of day
 
         const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999); // End of day
+        end.setHours(24, 59, 59, 999); // End of day
 
         parsedFilter[selectedDateField] = { $gte: start, $lte: end };
       }

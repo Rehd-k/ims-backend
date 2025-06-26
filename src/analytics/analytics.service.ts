@@ -141,7 +141,7 @@ export class AnalyticsService {
     startDate.setHours(0, 0, 0, 0); // Start of the startDate
 
     const endDate = new Date(query.endDate);
-    endDate.setHours(23, 59, 59, 999); // End of the endDate 
+    endDate.setHours(24, 59, 59, 999); // End of the endDate 
 
     // Calculate total revenue
     const revenueResult = await this.saleModel.aggregate([
@@ -281,7 +281,7 @@ export class AnalyticsService {
 
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(endOfWeek.getDate() + 6); // Set to Saturday
-    endOfWeek.setHours(23, 59, 59, 999);
+    endOfWeek.setHours(24, 59, 59, 999);
 
     const weeklySales = await this.saleModel.aggregate([
       {
@@ -354,7 +354,7 @@ export class AnalyticsService {
 
 
         startDate = new Date(now.setHours(0, 0, 0, 0));
-        endDate = new Date(now.setHours(23, 59, 59, 999));
+        endDate = new Date(now.setHours(24, 59, 59, 999));
         groupBy = {
           for: {
             $add: [
@@ -380,7 +380,7 @@ export class AnalyticsService {
         startDate.setHours(0, 0, 0, 0);
 
         endDate = new Date();
-        endDate.setHours(23, 59, 59, 999);
+        endDate.setHours(24, 59, 59, 999);
 
         groupBy = {
           for: {
