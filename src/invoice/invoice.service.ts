@@ -65,7 +65,7 @@ export class InvoiceService {
         ];
       }
 
-            console.log(parsedFilter)
+
 
       const result = await this.invoiceModel.find({ ...parsedFilter, location: req.user.location })
         .sort(parsedSort)
@@ -177,15 +177,6 @@ export class InvoiceService {
       runAggregation(aggregationFilters.dueToday)
     ]);
 
-
-    console.log({
-
-      totalAmountAllValue,
-      totalAmountPaidValue,
-      totalAmountPendingValue,
-      totalAmountDueTodayValue
-    })
-
     return {
 
       totalAmountAllValue,
@@ -208,6 +199,7 @@ export class InvoiceService {
 
   async update(filter: string, updateInvoiceDto: UpdateInvoiceDto, req: any) {
 
+
     const invoice = await this.invoiceModel.findOne(JSON.parse(filter))
 
 
@@ -215,9 +207,41 @@ export class InvoiceService {
       throw new Error(`Invoice not found`);
     }
 
-    Object.keys(updateInvoiceDto).forEach(key => {
-      invoice[key] = updateInvoiceDto[key];
-    })
+    // Iterate through the product list in updateInvoiceDto and the items list in invoice
+    if (updateInvoiceDto['products'] && Array.isArray(updateInvoiceDto['products']) && Array.isArray(invoice.items)) {
+      updateInvoiceDto['products'].forEach(productDto => {
+        const matchingItem = invoice.items.find(item => item.title === productDto.title);
+        if (matchingItem) {
+          // Add the invoice item's quantity value to quantity_paid
+          if (typeof matchingItem.quantity_paid !== 'number') {
+            matchingItem.quantity_paid = 0;
+          }
+          matchingItem.quantity_paid += Number(productDto.quantity) || 0;
+        }
+      });
+    }
+
+    if (updateInvoiceDto['transactionId']) {
+      invoice['transactionId'].push(updateInvoiceDto['transactionId'])
+    }
+
+    // Sum up quantity_paid and quantity for all items
+    let totalQuantityPaid = 0;
+    let totalQuantity = 0;
+    if (Array.isArray(invoice.items)) {
+      invoice.items.forEach(item => {
+        totalQuantityPaid += Number(item.quantity_paid) || 0;
+        totalQuantity += Number(item.quantity) || 0;
+      });
+    }
+
+    if (totalQuantity > 0) {
+      if (totalQuantityPaid >= totalQuantity) {
+        invoice.status = 'paid';
+      } else if (totalQuantityPaid < totalQuantity && totalQuantityPaid > 0) {
+        invoice.status = 'Part Pay';
+      }
+    }
     try {
       await this.logService.logAction(req.user.userId, req.user.username, 'Update Invoice', `Updated Invoice with id ${filter}`)
       return invoice.save();

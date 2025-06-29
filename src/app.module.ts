@@ -40,7 +40,7 @@ if (!fs.existsSync('./logs')) {
     MongooseModule.forRootAsync({
       useFactory: async () => {
         const uri = process.env.NODE_ENV === 'production' ? process.env.DATABASE_PROD : process.env.DATABASE_DEV;
-        return {
+        return { 
           uri,
           connectionFactory: (connection) => {
             connection.once('open', () => {

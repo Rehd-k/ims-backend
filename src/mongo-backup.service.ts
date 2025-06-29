@@ -7,7 +7,7 @@ import * as archiver from 'archiver';
 import * as cron from 'node-cron';
 
 @Injectable()
-export class MongoBackupService {
+export class MongoBackupService  {
   private mongoUri = 'mongodb://127.0.0.1:27017/ims'; // Update this
 
   async onModuleInit() {

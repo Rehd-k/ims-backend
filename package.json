@@ -10,7 +10,9 @@
   "pkg": {
     "scripts": "dist-obf/**/*.js",
     "assets": [
-      ".env"
+      ".env",
+      "node_modules/.pnpm/thread-stream@*/node_modules/thread-stream/lib/worker.js"
+      
     ],
     "targets": [
       "node18-win-x64"

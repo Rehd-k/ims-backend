@@ -20,8 +20,8 @@ export class AuthController {
 
     }
 
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(Role.God, Role.Admin)
+    // @UseGuards(JwtAuthGuard, RolesGuard)
+    // @Roles(Role.God, Role.Admin)
     @Post('register')
     async register(@Req() req: any, @Body() body: { firstName: string; lastName: string; username: string; password: string; role: string; location: string }) {
 

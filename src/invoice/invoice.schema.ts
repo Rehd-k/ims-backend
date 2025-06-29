@@ -86,8 +86,8 @@ export class Invoice extends Document {
     @Prop({ default: 'pending' })
     status: string;
 
-    @Prop({ default: '' })
-    transactionId: string;
+    @Prop({ default: [String] })
+    transactionId: string[];
 
     @Prop({ type: Types.ObjectId, ref: 'Bank', required: true })
     bank: Types.ObjectId;
