@@ -18,7 +18,6 @@ export class Category extends Document {
     @Prop({
         type: String,
         required: true,
-        unique: true,
         trim: true,
         set: (title: string) => title.toLowerCase()
     })

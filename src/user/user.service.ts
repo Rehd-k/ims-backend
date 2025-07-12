@@ -46,7 +46,7 @@ export class UserService {
             } = query;
             const parsedFilter = JSON.parse(filter);
             const parsedSort = JSON.parse(sort);
-            return await this.userModel.find(parsedFilter)
+            return await this.userModel.find({...parsedFilter, location: req.user.location })
                 .sort(parsedSort)
                 .skip(Number(skip))
                 .limit(Number(limit))

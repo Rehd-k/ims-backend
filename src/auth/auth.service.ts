@@ -35,7 +35,7 @@ export class AuthService {
 
     async register(firstName: string, lastName: string, username: string, password: string, role: string, location: any, req: any) {
         // let initiator = req.user.username;
-        return await this.userService.create({ firstName: 'Emeka', lastName: 'Ifeacho', username: 'chris', password: 'ifeachomekus', role: 'admin', initiator: 'admin', location: '685d4ec17342c0d86ce1f85d' });
+        return await this.userService.create({ firstName, lastName, username, password, role, initiator: 'admin', location });
 
 
     }

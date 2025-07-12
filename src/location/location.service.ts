@@ -9,9 +9,9 @@ import { log } from 'src/do_logger';
 export class LocationService {
     constructor(@InjectModel(Location.name) private readonly locationModel: Model<Location>) { }
 
-    async createStore(name: string, location: string, manager: string, contact: string, req: any) {
+    async createStore(name: string, location: string, manager: string, contact: string, req: any, firm_name : string) {
         try {
-            const store = new this.locationModel({ name, location, manager, contact, initiator: req.user.username });
+            const store = new this.locationModel({ name, location, manager, contact, initiator: "admin", firm_name });
             return await store.save();
         } catch (error) {
             log(`Error creating one store: ${error}`, "ERROR")

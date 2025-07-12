@@ -11,12 +11,12 @@ import { RolesGuard } from 'src/helpers/role/roles.guard';
 export class LocationController {
     constructor(private readonly locationService: LocationService) { }
 
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(Role.God, Role.Admin)
+    // @UseGuards(JwtAuthGuard, RolesGuard)
+    // @Roles(Role.God, Role.Admin)
     @Post()
     async createStore(@Body() body: any, @Req() req: any) {
-        const { name, location, manager, contact } = body;
-        return this.locationService.createStore(name, location, manager, contact, req);
+        const { name, location, manager, contact, firm_name } = body;
+        return this.locationService.createStore(name, location, manager, contact, req, firm_name);
     }
 
     @Get()
