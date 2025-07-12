@@ -39,7 +39,7 @@ if (!fs.existsSync('./logs')) {
     ConfigModule.forRoot(),
     MongooseModule.forRootAsync({
       useFactory: async () => {
-        const uri = "mongodb+srv://Rehdd-k:VTCF6myA9ltnJ6Rx@cryptoknight.2rshc.mongodb.net/ims?retryWrites=true&w=majority";
+        const uri = process.env.DATABASE_PROD;
         return { 
           uri,
           connectionFactory: (connection) => {
