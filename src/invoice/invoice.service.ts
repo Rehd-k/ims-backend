@@ -24,7 +24,9 @@ export class InvoiceService {
     createInvoiceDto['location'] = req.user.location;
     const invoice = await this.invoiceModel.create(createInvoiceDto)
     this.logService.logAction(req.user.userId, req.user.username, 'Create Invoice', `Created Invoice for user with id ${invoice.customer}`)
-    return invoice;
+    return invoice.populate('bank customer')
+
+
   }
 
   async findAll(query: QueryDto, req: any): Promise<Invoice[]> {
@@ -115,10 +117,16 @@ export class InvoiceService {
     // return messade;
   }
 
-  async remove(filter: any, req: any) {
-    await this.invoiceModel.findOneAndDelete(filter)
-    await this.logService.logAction(req.user.userId, req.user.username, 'Remove Invoice', `Removed Invoice with filter ${JSON.stringify(filter)}`)
-    return true;
+  async remove(filterString: any, req: any) {
+    try {
+      const filter = JSON.parse(filterString.filter);
+      await this.invoiceModel.findOneAndDelete(filter)
+      await this.logService.logAction(req.user.userId, req.user.username, 'Remove Invoice', `Removed Invoice with filter ${JSON.stringify(filter)}`)
+      return true;
+    } catch (error) {
+      throw new Error(`Error deketing invoice: ${error.message}`);
+    }
+
   }
 
   formatPhoneNumber(phone: string): string {

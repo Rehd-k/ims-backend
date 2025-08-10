@@ -49,8 +49,8 @@ export class InvoiceController {
   }
 
   @Roles(Role.God, Role.Admin, Role.Manager, Role.Staff, Role.Cashier)
-  @Delete(':filter')
-  remove(@Param('filter') filter: string, @Req() req: any) {
+  @Delete()
+  remove(@Query() filter: string, @Req() req: any) {
     return this.invoiceService.remove(filter, req);
   }
 }
