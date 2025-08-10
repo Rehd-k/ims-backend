@@ -269,7 +269,8 @@ export class InvoiceService {
     // return messade;
   }
 
-  async remove(filter: any, req: any) {
+  async remove(filterStreing: any, req: any) {
+    const filter = JSON.parse(filterStreing.filter);
     try {
       await this.invoiceModel.findOneAndDelete(filter)
       await this.logService.logAction(req.user.userId, req.user.username, 'Remove Invoice', `Removed Invoice with filter ${JSON.stringify(filter)}`)
