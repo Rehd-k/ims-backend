@@ -78,6 +78,9 @@ export class Purchase {
     transfer: number;
 
     @Prop()
+    pricePerCartonUnit: number;
+
+    @Prop()
     cash: number;
 
     @Prop()

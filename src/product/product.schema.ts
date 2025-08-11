@@ -52,6 +52,9 @@ export class Product extends Document {
     @Prop()
     cartonAmount: number
 
+    @Prop()
+    cartonPrice: number
+
     @Prop({ trim: true, set: (title: string) => title.toLowerCase() })
     brand: string;
 
