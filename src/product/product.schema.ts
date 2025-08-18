@@ -49,10 +49,10 @@ export class Product extends Document {
     @Prop({ default: 'unit', enum: ['unit', 'carton'] })
     type: String;
 
-    @Prop()
+    @Prop({ min: 0, default: 0 })
     cartonAmount: number
 
-    @Prop()
+    @Prop({ min: 0, default: 0 })
     cartonPrice: number
 
     @Prop({ trim: true, set: (title: string) => title.toLowerCase() })

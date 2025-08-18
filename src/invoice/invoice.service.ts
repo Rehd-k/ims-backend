@@ -7,18 +7,28 @@ import { Model } from 'mongoose';
 import { ActivityService } from 'src/activity/activity.service';
 import { QueryDto } from 'src/product/query.dto';
 import { log } from 'src/do_logger';
+import { Product } from 'src/product/product.schema';
 
 
 
 @Injectable()
 export class InvoiceService {
   // , private whatsappService: WhatsappService
-  constructor(@InjectModel(Invoice.name) private readonly invoiceModel: Model<Invoice>, private logService: ActivityService) { }
+  constructor(@InjectModel(Invoice.name) private readonly invoiceModel: Model<Invoice>,
+    private logService: ActivityService,
+    @InjectModel(Product.name) private readonly productModel: Model<Product>,
+  ) { }
   async create(createInvoiceDto: CreateInvoiceDto, req: any) {
     try {
       createInvoiceDto['initiator'] = req.user.username
       createInvoiceDto['location'] = req.user.location;
       const invoice = await this.invoiceModel.create(createInvoiceDto)
+      for (const element of invoice.items) {
+        const product = await this.productModel.findById(element._id)
+        product.quantity = product.quantity - element.quantity
+        await product.save();
+      }
+
       this.logService.logAction(req.user.userId, req.user.username, 'Create Invoice', `Created Invoice for user with id ${invoice.customer}`)
       return invoice;
     } catch (error) {
@@ -209,7 +219,7 @@ export class InvoiceService {
 
     // Iterate through the product list in updateInvoiceDto and the items list in invoice
     if (updateInvoiceDto['products'] && Array.isArray(updateInvoiceDto['products']) && Array.isArray(invoice.items)) {
-      updateInvoiceDto['products'].forEach(productDto => {
+      updateInvoiceDto['products'].forEach(async productDto => {
         const matchingItem = invoice.items.find(item => item.title === productDto.title);
         if (matchingItem) {
           // Add the invoice item's quantity value to quantity_paid
@@ -217,6 +227,9 @@ export class InvoiceService {
             matchingItem.quantity_paid = 0;
           }
           matchingItem.quantity_paid += Number(productDto.quantity) || 0;
+          const product = await this.productModel.findById(matchingItem._id)
+          product.quantity = product.quantity + productDto.quantity
+          await product.save()
         }
       });
     }
@@ -272,8 +285,15 @@ export class InvoiceService {
   async remove(filterStreing: any, req: any) {
     const filter = JSON.parse(filterStreing.filter);
     try {
-      console.log(filter)
-      await this.invoiceModel.findOneAndDelete(filter)
+
+      const invoice = await this.invoiceModel.findOne(filter)
+      for (const element of invoice.items) {
+        const product = await this.productModel.findById(element._id)
+        product.quantity = product.quantity + (element.quantity - element.quantity_paid)
+        await product.save()
+      }
+
+      await invoice.deleteOne()
       await this.logService.logAction(req.user.userId, req.user.username, 'Remove Invoice', `Removed Invoice with filter ${JSON.stringify(filter)}`)
       return true;
     } catch (error) {

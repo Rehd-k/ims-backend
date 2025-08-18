@@ -19,6 +19,6 @@ import { SalesModule } from 'src/sales/sales.module';
   ],
   providers: [ProductService, InventoryService],
   controllers: [ProductController],
-  exports: [ProductService, InventoryService]
+  exports: [ProductService, InventoryService, MongooseModule]
 })
 export class ProductModule { }

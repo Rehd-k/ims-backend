@@ -25,6 +25,15 @@ class CartProduct {
 
     @Prop()
     total: number;
+
+    @Prop({ default: 'unit' })
+    type: string;
+
+    @Prop({ default: 0 })
+    cartonAmount: number
+
+    @Prop({ default: 0 })
+    cartonPrice: number
 }
 
 @Schema({
