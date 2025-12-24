@@ -28,7 +28,7 @@ import { ChargesModule } from './charges/charges.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    MongooseModule.forRoot(process.env.NODE_ENV === 'production' ? process.env.DATABASE_PROD : process.env.DATABASE_DEV),
+    MongooseModule.forRoot(process.env.NODE_ENV === 'production' ? process.env.DATABASE_PROD : process.env.DATABASE_PROD),
     UserModule,
     AuthModule,
     ProductModule,
